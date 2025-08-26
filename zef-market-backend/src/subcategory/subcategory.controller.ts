@@ -24,7 +24,7 @@ import { SubCategoryService } from './subcategory.service';
 import { CreateSubCategoryDto } from './dto/create-subcategory.dto';
 import { UpdateSubCategoryDto } from './dto/update-subcategory.dto';
 
-@Controller('v1/subcategory')
+@Controller('api/v1/subcategory')
 export class SubCategoryController {
   constructor(private readonly subCategoryService: SubCategoryService) {}
 

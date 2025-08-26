@@ -24,7 +24,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
 import { JwtPayloadType } from 'src/shared/types';
 
-@Controller('v1/category')
+@Controller('api/v1/category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 

@@ -6,7 +6,7 @@ export class TaxAndShipping {
     type: Number,
     default : 0,
   })
-  taxPrice: number;
+  taxRate: number;
   @Prop({
     type: Number,
     default : 0,

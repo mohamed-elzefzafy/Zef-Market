@@ -28,18 +28,30 @@ export class User {
     type: { url: String, public_id: String },
     _id: false,
     required: false,
-      default: {
-    url: defaultProfileImage,
-    public_id: null,
-  },
+    default: {
+      url: defaultProfileImage,
+      public_id: null,
+    },
   })
   profileImage: { url: string; public_id: string };
 
-   @Prop({ type: [{ type: Types.ObjectId, ref: 'Product' }], default: [] })
-  wishlist: Types.ObjectId[]; 
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Product' }], default: [] })
+  wishlist: Types.ObjectId[];
 
   @Prop({ type: String, UserRoles, default: UserRoles.USER })
   role: UserRoles;
+
+  @Prop({ type: String, required: false,default :""})
+  country: string;
+
+  @Prop({ type: String, required: false ,default :""})
+  city: string;
+
+  @Prop({ type: String, required: false ,default :""})
+  address: string;
+
+  @Prop({ type: String, required: false ,default :""})
+  phoneNumber: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

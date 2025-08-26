@@ -10,6 +10,7 @@ export class Coupon {
     required: true,
     min: [3, 'Name must be at least 3 characters'],
     max: [100, 'Name must be at most 100 characters'],
+    unique :true,
   })
   name: string;
   @Prop({

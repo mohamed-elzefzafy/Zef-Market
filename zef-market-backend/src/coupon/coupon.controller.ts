@@ -20,7 +20,7 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { PAGE_LIMIT_ADMIN } from 'src/shared/constants';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 
-@Controller('v1/coupon')
+@Controller('api/v1/coupon')
 export class CouponController {
   constructor(private readonly couponService: CouponService) {}
 
@@ -45,8 +45,8 @@ export class CouponController {
   @Get(':id')
   @Roles([UserRoles.ADMIN])
   @UseGuards(AuthGuard)
-  findOne(@Param('id', ParseObjectIdPipe) id: string) {
-    return this.couponService.findOne(id);
+  findOneById(@Param('id', ParseObjectIdPipe) id: string) {
+    return this.couponService.findOneById(id);
   }
 
   @Patch(':id')

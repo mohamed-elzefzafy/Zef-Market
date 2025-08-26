@@ -158,6 +158,16 @@ export class ProductsService {
     return product;
   }
 
+    async findOneForCart(id: string) {
+    const product = await this.productModel.findById(id);
+    if (!product) {
+      return null
+    }
+
+    return product;
+  }
+
+
   async findProductsToSubCategory(subCategoryId: string) {
     await this.subCategoryService.findOne(subCategoryId);
     const products = await this.productModel.find({
@@ -232,5 +242,26 @@ export class ProductsService {
 
     await product.deleteOne();
     return { message: `product with id ${id} deleted successfully` };
+  }
+
+  async checkProductsForOrder(productId : string , quantity : number):Promise<Product| null>{
+    const product = await this.productModel.findOne({_id : productId , stock: { $gte: quantity}});
+    if(!product ) {
+      throw new NotFoundException(`product with id ${productId} not found`);
+    }
+    return product;
+  }
+
+async  updateProductForOrder (productId : string , quantity : number):Promise<void> {
+    // await this.productModel.updateOne(
+
+       await this.productModel.updateOne(
+        { _id: productId },
+        { $inc: { stock: -quantity, sold: quantity } },
+      );
+    //     { _id: item.productId },
+    //     { $inc: { countInStock: -item.quantity, sales: item.quantity } },
+    //   );
+
   }
 }

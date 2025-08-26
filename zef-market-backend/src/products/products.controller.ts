@@ -24,7 +24,7 @@ import { multerOptions } from 'src/shared/multer.config';
 import { PAGE_LIMIT_ADMIN } from 'src/shared/constants';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 
-@Controller('v1/products')
+@Controller('api/v1/products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 

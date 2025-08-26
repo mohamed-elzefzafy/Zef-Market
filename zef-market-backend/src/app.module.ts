@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
@@ -19,13 +18,14 @@ import { WishListModule } from './wish-list/wish-list.module';
 import { BannerModule } from './banner/banner.module';
 import { CouponModule } from './coupon/coupon.module';
 import { CartModule } from './cart/cart.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
-    }), 
+    }),
     CloudinaryModule,
     MulterModule.register({
       storage: multer.memoryStorage(),
@@ -63,8 +63,9 @@ import { CartModule } from './cart/cart.module';
     BannerModule,
     CouponModule,
     CartModule,
+    OrderModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [],
 })
 export class AppModule {}

@@ -20,6 +20,7 @@ import { User } from 'src/users/entities/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { defaultProfileImage } from 'src/shared/constants';
 import { JwtPayloadType } from 'src/shared/types';
+import { UpdateUserAddressDto } from './dtos/update-user-address.dto';
 
 @Injectable()
 export class AuthService {
@@ -92,6 +93,21 @@ export class AuthService {
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
     return { user, token };
+  }
+
+  async updateUserAddress(
+    updateUserAddressDto: UpdateUserAddressDto,
+    userId: string,
+  ) {
+    const user = await this.userModel.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    Object.assign(user, updateUserAddressDto);
+
+    await user.save();
+    return user;
   }
   public async resetPassword(resetPasswordDto: ResetPasswordDto) {
     const user = await this.userModel.findOne({

@@ -26,17 +26,14 @@ export class TaxAndShippingService {
   }
 
   public async findAll() {
-    const tax = await this.taxAndShippingModel.findOne();
-    return {
-      message: 'Tax created successfully',
-      tax,
-    }
+    const taxAndShipping = await this.taxAndShippingModel.findOne();
+    return taxAndShipping;
   }
 
   public async remove() {
     let tax = await this.taxAndShippingModel.findOne();
     if (!tax) throw new Error('Tax not found');
-    tax.taxPrice = 0;
+    tax.taxRate = 0;
     tax.shippingPrice = 0;
  await tax.save();
     return {

@@ -17,12 +17,12 @@ import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
 import { JwtPayloadType } from 'src/shared/types';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 
-@Controller('v1/wish-list')
+@Controller('api/v1/wish-list')
 export class WishListController {
   constructor(private readonly wishListService: WishListService) {}
 
   @Post()
-  @Roles([ UserRoles.USER])
+  @Roles([UserRoles.USER])
   @UseGuards(AuthGuard)
   create(
     @Body() createWishListDto: CreateWishListDto,
@@ -32,7 +32,7 @@ export class WishListController {
   }
 
   @Get('get-my-wishlist')
-  @Roles([ UserRoles.USER])
+  @Roles([UserRoles.USER])
   @UseGuards(AuthGuard)
   findAllCurrentUserWishlist(
     @CurrentUser() user: JwtPayloadType,
@@ -47,7 +47,7 @@ export class WishListController {
   }
 
   @Patch(':id')
-  @Roles([ UserRoles.USER])
+  @Roles([UserRoles.USER])
   @UseGuards(AuthGuard)
   removeFromWishlist(
     @Param('id', ParseObjectIdPipe) id: string,

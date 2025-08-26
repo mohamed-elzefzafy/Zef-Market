@@ -6,7 +6,7 @@ import { UserRoles } from 'src/shared/enums/roles.enum';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 
 
-@Controller('v1/tax-and-shipping')
+@Controller('api/v1/tax-and-shipping')
 export class TaxAndShippingController {
   constructor(private readonly taxAndShippingService: TaxAndShippingService) {}
 

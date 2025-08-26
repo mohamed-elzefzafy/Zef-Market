@@ -21,7 +21,7 @@ import { PAGE_LIMIT_ADMIN } from 'src/shared/constants';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 
 
-@Controller('v1/users')
+@Controller('api/v1/users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

@@ -1,4 +1,4 @@
-import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Coupon } from './entities/coupon.schema';
@@ -11,13 +11,16 @@ export class CouponService {
 
   async create(createCouponDto: CreateCouponDto) {
     const coupon = await this.couponModule.findOne({
-      name: createCouponDto.name,
+      name: createCouponDto.name.toUpperCase(),
     });
+    if (coupon) {
+      throw new BadRequestException(`Coupon with name : ${coupon.name} already exist`);
+    }
 
     createCouponDto.name = createCouponDto.name.toUpperCase();
-    if (coupon) {
-      throw new HttpException('Coupon already exist', 400);
-    }
+    // if (coupon) {
+    //   throw new NotFoundException('Coupon already exist');
+    // }
 
             const isExpired = new Date(createCouponDto.expireDate) > new Date();
     if (!isExpired) {
@@ -76,7 +79,7 @@ export class CouponService {
     };
   }
 
-  async findOne(id: string) {
+  async findOneById(id: string) {
     const coupon = await this.couponModule.findById(id);
     if (!coupon) {
       throw new NotFoundException('Coupon not found');
@@ -85,34 +88,93 @@ export class CouponService {
 return coupon;
   }
 
-  async update(id: string, updateCouponDto: UpdateCouponDto) {
-    const coupon = await this.couponModule.findById(id).select('-__v');
+    async findOneByName(couponName: string) {
+    const coupon = await this.couponModule.findOne({name:couponName});
     if (!coupon) {
       throw new NotFoundException('Coupon not found');
     }
-if (updateCouponDto.expireDate) {
+
+return coupon;
+  }
+
+
+//   async update(id: string, updateCouponDto: UpdateCouponDto) {
+//     const coupon = await this.couponModule.findById(id);
+//     if (!coupon) {
+//       throw new NotFoundException('Coupon not found');
+//     }
+//   if (updateCouponDto.name) {
+//       if(coupon.name.toUpperCase() === updateCouponDto.name.toUpperCase()) {
+//       throw new BadRequestException(`Coupon with name : ${coupon.name} already exist`)
+//     }
+//   }
+// if (updateCouponDto.expireDate) {
   
-        const isExpired = new Date(updateCouponDto.expireDate) > new Date();
+//         const isExpired = new Date(updateCouponDto.expireDate) > new Date();
+//     if (!isExpired) {
+//       throw new HttpException("Coupon can't be expired", 400);
+//     }
+
+// }
+//   if (updateCouponDto.name) {
+//       updateCouponDto.name = updateCouponDto.name.toUpperCase();
+//   }
+//     const updatedCoupon = await this.couponModule.findByIdAndUpdate(
+//       id,
+//       updateCouponDto,
+//       {
+//         new: true,
+//       },
+//     );
+//     return updatedCoupon;
+//   }
+
+async update(id: string, updateCouponDto: UpdateCouponDto) {
+  const coupon = await this.couponModule.findById(id);
+  if (!coupon) {
+    throw new NotFoundException('Coupon not found');
+  }
+
+  // لو فيه تحديث للاسم
+  if (updateCouponDto.name) {
+    const newName = updateCouponDto.name.toUpperCase();
+
+    // ندور هل في كوبون تاني بنفس الاسم
+    const existingCoupon = await this.couponModule.findOne({
+      name: newName,
+      _id: { $ne: id }, // استثني الكوبون اللي بيتم تحديثه
+    });
+
+    if (existingCoupon) {
+      throw new BadRequestException(
+        `Coupon with name : ${newName} already exists`,
+      );
+    }
+
+    updateCouponDto.name = newName;
+  }
+
+  if (updateCouponDto.expireDate) {
+    const isExpired = new Date(updateCouponDto.expireDate) > new Date();
     if (!isExpired) {
       throw new HttpException("Coupon can't be expired", 400);
     }
+  }
 
+  const updatedCoupon = await this.couponModule.findByIdAndUpdate(
+    id,
+    updateCouponDto,
+    {
+      new: true,
+    },
+  );
+
+  return updatedCoupon;
 }
-  if (updateCouponDto.name) {
-      updateCouponDto.name = updateCouponDto.name.toUpperCase();
-  }
-    const updatedCoupon = await this.couponModule.findByIdAndUpdate(
-      id,
-      updateCouponDto,
-      {
-        new: true,
-      },
-    );
-    return updatedCoupon;
-  }
+
 
   async remove(id: string) {
-    const coupon = await this.findOne(id);
+    const coupon = await this.findOneById(id);
  
     await coupon.deleteOne();
 
@@ -124,6 +186,9 @@ async findSomeCouponsIds(couponsIds: string[]) {
   const coupons = await this.couponModule.find({
     _id: { $in: couponsIds },
   });
-  return coupons;
+
+  const cloneCoupons = coupons.filter(coupon =>  new Date(coupon.expireDate) > new Date())
+  return cloneCoupons;
 }
+
 }

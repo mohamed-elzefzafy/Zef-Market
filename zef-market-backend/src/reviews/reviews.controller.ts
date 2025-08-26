@@ -20,7 +20,7 @@ import { JwtPayloadType } from 'src/shared/types';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import { PAGE_LIMIT_ADMIN } from 'src/shared/constants';
 
-@Controller('v1/reviews')
+@Controller('api/v1/reviews')
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 

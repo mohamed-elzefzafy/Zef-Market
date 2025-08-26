@@ -12,5 +12,6 @@ import { TaxAndShippingService } from './taxAndShipping.service';
   ],
   controllers: [TaxAndShippingController],
   providers: [TaxAndShippingService],
+  exports:[TaxAndShippingService],
 })
 export class TaxAndShippingModule {}

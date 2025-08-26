@@ -28,8 +28,9 @@ import { VerificationAccountDto } from './dtos/verification-account.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserRoles } from 'src/shared/enums/roles.enum';
 import { JwtPayloadType } from 'src/shared/types';
+import { UpdateUserAddressDto } from './dtos/update-user-address.dto';
 
-@Controller('v1/auth')
+@Controller('api/v1/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -45,6 +46,14 @@ export class AuthController {
   @Post('login')
   login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
     return this.authService.login(loginDto, res);
+  }
+
+    @Patch('update-user-address')
+      @Roles([UserRoles.ADMIN, UserRoles.USER])
+  @UseGuards(AuthGuard)
+  updateUserAddress(@Body() updateUserAddressDto: UpdateUserAddressDto,@CurrentUser() user: JwtPayloadType,) {
+    const userId = user.id;
+    return this.authService.updateUserAddress(updateUserAddressDto, userId);
   }
 
   @Post('reset-password')

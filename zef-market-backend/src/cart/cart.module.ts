@@ -16,5 +16,6 @@ import { CouponModule } from 'src/coupon/coupon.module';
     ProductsModule,
     CouponModule
   ],
+  exports:[CartService],
 })
 export class CartModule {}

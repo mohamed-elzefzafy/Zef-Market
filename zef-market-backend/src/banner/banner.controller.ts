@@ -19,7 +19,7 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 
-@Controller('v1/banner')
+@Controller('api/v1/banner')
 export class BannerController {
   constructor(private readonly bannerService: BannerService) {}
 
