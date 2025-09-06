@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { OrderController } from './order.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -9,6 +9,8 @@ import { ProductsModule } from 'src/products/products.module';
 import { CouponModule } from 'src/coupon/coupon.module';
 import { TaxAndShippingModule } from 'src/taxAndShipping/taxAndShipping.module';
 import { StripeModule } from 'src/stripe/stripe.module';
+import { UsersModule } from 'src/users/users.module';
+import { PaypalModule } from 'src/paypal/paypal.module';
 
 @Module({
   imports: [
@@ -18,9 +20,12 @@ import { StripeModule } from 'src/stripe/stripe.module';
     ProductsModule,
     CouponModule,
     StripeModule,
+    UsersModule,
     TaxAndShippingModule,
+     forwardRef(()=>  PaypalModule),
   ],
   controllers: [OrderController],
   providers: [OrderService],
+  exports: [OrderService],
 })
 export class OrderModule {}

@@ -53,20 +53,20 @@ export class Order {
   @Prop({ type: Number, required: true, default: 0 })
   shipping: number;
 
-  @Prop({ type: String, enum: ['cash', 'card'], default: 'card' })
+  @Prop({ type: String, enum: ['cash', 'stripe' ,'paypal' , 'paymob'], default: 'cash' })
   paymentMethodType: string;
 
   @Prop({ type: Boolean, default: false })
   isPaid: boolean;
 
   @Prop({ type: Date })
-  paidAt?: Date;
+  paidAt?: Date | string;
 
   @Prop({ type: Boolean, default: false })
   isDelivered: boolean;
 
   @Prop({ type: Date })
-  deliveredAt?: Date;
+  deliveredAt?: Date | string;
 
   // @Prop({
   //   type: {

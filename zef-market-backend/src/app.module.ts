@@ -19,6 +19,7 @@ import { BannerModule } from './banner/banner.module';
 import { CouponModule } from './coupon/coupon.module';
 import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
+import { PaypalModule } from './paypal/paypal.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { OrderModule } from './order/order.module';
     CouponModule,
     CartModule,
     OrderModule,
+    PaypalModule,
   ],
   controllers: [AppController],
   providers: [],

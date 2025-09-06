@@ -95,62 +95,121 @@ export class ProductsService {
     return product;
   }
 
-  public async findAll(
-    page: number,
-    limit: number,
-    category?: string,
-    subCategory?: string,
-    brand?: string,
-    search?: string,
-  ) {
-    const pageNumber = Math.max(1, page);
-    const limitNumber = Math.max(1, limit);
-    const skip = (pageNumber - 1) * limitNumber;
+  // public async findAll(
+  //   page: number,
+  //   limit: number,
+  //   category?: string,
+  //   subCategory?: string,
+  //   brand?: string,
+  //   search?: string,
+  // ) {
+  //   const pageNumber = Math.max(1, page);
+  //   const limitNumber = Math.max(1, limit);
+  //   const skip = (pageNumber - 1) * limitNumber;
 
-    // Build filter object
-    const filter: any = {};
+  //   // Build filter object
+  //   const filter: any = {};
 
-    if (category) filter.category = category;
-    if (subCategory) filter.subCategory = subCategory;
-    if (brand) filter.brand = brand;
+  //   if (category) filter.category = category;
+  //   if (subCategory) filter.subCategory = subCategory;
+  //   if (brand) filter.brand = brand;
 
-    if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-      ];
-    }
+  //   if (search) {
+  //     filter.$or = [
+  //       { title: { $regex: search, $options: 'i' } },
+  //       { description: { $regex: search, $options: 'i' } },
+  //     ];
+  //   }
 
-    // Build query
-    const query = this.productModel
-      .find(filter)
-      .populate('category')
-      .populate('subCategory')
-      .populate('brand');
+  //   // Build query
+  //   const query = this.productModel
+  //     .find(filter)
+  //     .populate('category')
+  //     .populate('subCategory')
+  //     .populate('brand');
 
-    const products = await query
-      .sort({ createdAt: -1 }) // or your custom sorting
-      .skip(skip)
-      .limit(limitNumber)
-      .exec();
+  //   const products = await query
+  //     .sort({ createdAt: -1 }) // or your custom sorting
+  //     .skip(skip)
+  //     .limit(limitNumber)
+  //     .exec();
 
-    const total = await this.productModel.countDocuments(filter).exec();
+  //   const total = await this.productModel.countDocuments(filter).exec();
 
-    const pagesCount = Math.ceil(total / limitNumber);
+  //   const pagesCount = Math.ceil(total / limitNumber);
 
-    return {
-      products,
-      pagination: {
-        total,
-        page: pageNumber,
-        limit: limitNumber,
-        pagesCount,
-      },
-    };
+  //   return {
+  //     products,
+  //     pagination: {
+  //       total,
+  //       page: pageNumber,
+  //       limit: limitNumber,
+  //       pagesCount,
+  //     },
+  //   };
+  // }
+
+public async findAll(
+  page: number,
+  limit: number,
+  category?: string,
+  subCategory?: string,
+  brand?: string,
+  keyword?: string,
+  rating?: number,                     // NEW
+  sortByPrice?: 'asc' | 'desc',        // NEW
+) {
+  const pageNumber = Math.max(1, page);
+  const limitNumber = Math.max(1, limit);
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const filter: any = {};
+  if (category) filter.category = category;
+  if (subCategory) filter.subCategory = subCategory;
+  if (brand) filter.brand = brand;
+
+  if (keyword) {
+    filter.$or = [
+      { title: { $regex: keyword, $options: 'i' } },
+      { description: { $regex: keyword, $options: 'i' } },
+    ];
   }
 
+  if (typeof rating === 'number') {
+    filter.rating = { $gte: rating };
+  }
+
+  const query = this.productModel
+    .find(filter)
+    .populate('category')
+    .populate('subCategory')
+    .populate('brand');
+
+  // ✅ لو فيه sortByPrice استخدمه لوحده. لو مفيش يبقى الافتراضي createdAt
+  const sort: Record<string, 1 | -1> =
+    sortByPrice ? { finalPrice: sortByPrice === 'asc' ? 1 : -1 } : { createdAt: -1 };
+
+  const [products, total] = await Promise.all([
+    query.sort(sort).skip(skip).limit(limitNumber).exec(),
+    this.productModel.countDocuments(filter).exec(),
+  ]);
+
+  const pagesCount = Math.ceil(total / limitNumber);
+
+  return {
+    products,
+    pagination: {
+      total,
+      page: pageNumber,
+      limit: limitNumber,
+      pagesCount,
+    },
+  };
+}
+
+
   async findOne(id: string) {
-    const product = await this.productModel.findById(id);
+    const product = await this.productModel.findById(id).populate('category').populate('subCategory').populate('brand');
     if (!product) {
       throw new NotFoundException(`product with id ${id} not found`);
     }
@@ -196,12 +255,12 @@ export class ProductsService {
   async update(
     id: string,
     updateProductDto: UpdateProductDto,
-    files: Express.Multer.File[],
+    files?: Express.Multer.File[],
   ) {
     const product = await this.findOne(id);
 
     Object.assign(product, updateProductDto);
-    if (files) {
+    if (files && files?.length > 0) {
       for (let i = 0; i < product.images.length; i++) {
         await this.cloudinaryService.removeImage(product.images[i].public_id);
       }

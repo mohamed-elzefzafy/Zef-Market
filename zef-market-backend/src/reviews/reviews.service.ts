@@ -27,7 +27,7 @@ export class ReviewsService {
       user: user.id,
     });
     if (userReview) {
-      throw new BadRequestException('you have already reviewed this course');
+      throw new BadRequestException('you have already reviewed this product');
     }
     const review = await this.reviewModel.create({
       ...createReviewDto,
@@ -168,35 +168,26 @@ export class ReviewsService {
   // }
 
   async remove(id: string, user: JwtPayloadType) {
-  // 1. تأكد إن الريفيو موجود
   const review = await this.reviewModel.findById(id);
 
   if (!review) {
     throw new NotFoundException(`There's no review with this id: ${id}`);
   }
 
-  // 2. تأكد إن المستخدم هو صاحب الريفيو
   if (review.user.toString() !== user.id.toString()) {
     throw new UnauthorizedException('You are not allowed to access this route');
   }
 
-  // 3. خزن المنتج قبل ما تحذف الريفيو
   const productId = review.product;
-
-  // 4. احذف الريفيو
   await review.deleteOne();
-
-  // 5. جيب المنتج المرتبط بالريفيو
   const product = await this.productsService.findOne(productId);
 
   if (!product) {
     throw new NotFoundException(`Product not found for review: ${id}`);
   }
 
-  // 6. جيب كل الريفيوهات الباقية للمنتج
   const productReviews = await this.reviewModel.find({ product: product._id });
 
-  // 7. احسب المتوسط الجديد
   if (productReviews.length > 0) {
     const totalRating = productReviews.reduce(
       (sum, r) => sum + r.rating,
@@ -204,16 +195,13 @@ export class ReviewsService {
     );
     product.rating = totalRating / productReviews.length;
   } else {
-    product.rating = 0; // مافيش ريفيوهات -> التقييم صفر
+    product.rating = 0; 
   }
 
-  // 8. حدث عدد الريفيوهات
   product.reviewsNumber = productReviews.length;
 
-  // 9. احفظ التغييرات
   await product.save();
 
-  // 10. رجّع رسالة نجاح
   return { message: `Review with id (${id}) has been removed` };
 }
 

@@ -143,6 +143,7 @@ async handleCheckoutWebhook(event: any) {
     shipping: Number(metadata.shipping),
     paymentMethodType: 'card',
     isPaid: true,
+    paidAt:new Date(),
   });
 
   // خصم من المخزون

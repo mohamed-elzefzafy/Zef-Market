@@ -142,7 +142,7 @@ export class CartService {
   }
 
   async getCurrentUserCart(userId: string) {
-    const cart = await this.cartModel.findOne({ user: userId });
+    const cart = await this.cartModel.findOne({ user: userId }).populate('cartItems.productId');;
 
     if (!cart) {
       throw new NotFoundException('cart not found');

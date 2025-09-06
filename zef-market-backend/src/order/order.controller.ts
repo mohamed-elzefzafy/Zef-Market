@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -16,12 +17,14 @@ import { UserRoles } from 'src/shared/enums/roles.enum';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
 import { JwtPayloadType } from 'src/shared/types';
+import { PAGE_LIMIT_ADMIN } from 'src/shared/constants';
+import { ParseObjectIdPipe } from '@nestjs/mongoose';
 
 @Controller('api/v1/order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  @Post("create-order")
+  @Post('create-order')
   @Roles([UserRoles.USER])
   @UseGuards(AuthGuard)
   async createOrder(
@@ -29,25 +32,75 @@ export class OrderController {
     @CurrentUser() user: JwtPayloadType,
   ) {
     const userId = user.id;
-    return this.orderService.createOrder(createOrderDto,userId);
+    return this.orderService.createOrder(createOrderDto, userId);
   }
-  @Get()
-  findAll() {
-    return this.orderService.findAll();
+  // @Get("get-admin-all-orders")
+  //   @Roles([UserRoles.ADMIN])
+  // @UseGuards(AuthGuard)
+  // getAdminAllOrders() {
+  //   return this.orderService.getAdminAllOrders();
+  // }
+
+  @Get('get-admin-all-orders')
+  @Roles([UserRoles.ADMIN])
+  @UseGuards(AuthGuard)
+  getAdminAllOrders(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = `${PAGE_LIMIT_ADMIN}`,
+  ) {
+    return this.orderService.getAdminAllOrders(+page, +limit);
+  }
+
+  @Get('get-current-user-all-orders')
+  @Roles([UserRoles.USER])
+  @UseGuards(AuthGuard)
+  getCurrentUserAllOrders(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = `${PAGE_LIMIT_ADMIN}`,
+    @CurrentUser() user: JwtPayloadType,
+  ) {
+    return this.orderService.getCurrentUserAllOrders(+page, +limit, user.id);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.orderService.findOne(+id);
+  @Roles([UserRoles.ADMIN, UserRoles.USER])
+  @UseGuards(AuthGuard)
+  findOne(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @CurrentUser() user: JwtPayloadType,
+  ) {
+    return this.orderService.findOne(id,user.id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.orderService.update(+id, updateOrderDto);
+
+    @Patch('admin-update-order-to-paid/:id')
+  @Roles([UserRoles.ADMIN])
+  @UseGuards(AuthGuard)
+  updateOrderToPaid(
+    @Param('id', ParseObjectIdPipe) id: string,
+  ) {
+    return this.orderService.updateOrderToPaid(id);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.orderService.remove(+id);
+
+      @Patch('admin-update-order-to-deliver/:id')
+  @Roles([UserRoles.ADMIN])
+  @UseGuards(AuthGuard)
+  updateOrderToDeliverd(
+    @Param('id', ParseObjectIdPipe) id: string,
+  ) {
+    return this.orderService.updateOrderToDeliverd(id);
   }
+
+// orders.controller.ts
+@Post('paypal/capture/:orderId/:paypalOrderId')
+@UseGuards(AuthGuard)
+async capturePaypal(
+  @Param('orderId') orderId: string,
+  @Param('paypalOrderId') paypalOrderId: string,
+  @CurrentUser() user: JwtPayloadType,
+) {
+  return this.orderService.capturePaypalOrder(orderId, paypalOrderId, user.id);
+}
+
 }

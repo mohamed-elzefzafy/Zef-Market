@@ -39,24 +39,53 @@ export class ProductsController {
     return this.productsService.create(createProductDto, files);
   }
 
-  @Get()
-  findAll(
-    @Query('page') page: string = '1',
-    @Query('limit') limit: string = `${PAGE_LIMIT_ADMIN}`,
-    @Query('category') category?: string,
-    @Query('subCategory') subCategory?: string,
-    @Query('brand') brand?: string,
-    @Query('search') search?: string,
-  ) {
-    return this.productsService.findAll(
-      +page,
-      +limit,
-      category,
-      subCategory,
-      brand,
-      search,
-    );
-  }
+  // @Get()
+  // findAll(
+  //   @Query('page') page: string = '1',
+  //   @Query('limit') limit: string = `${PAGE_LIMIT_ADMIN}`,
+  //   @Query('category') category?: string,
+  //   @Query('subCategory') subCategory?: string,
+  //   @Query('brand') brand?: string,
+  //   @Query('search') search?: string,
+  // ) {
+  //   return this.productsService.findAll(
+  //     +page,
+  //     +limit,
+  //     category,
+  //     subCategory,
+  //     brand,
+  //     search,
+  //   );
+  // }
+
+@Get()
+findAll(
+  @Query('page') page: string = '1',
+  @Query('limit') limit: string = `${PAGE_LIMIT_ADMIN}`,
+  @Query('category') category?: string,
+  @Query('subCategory') subCategory?: string,
+  @Query('brand') brand?: string,
+  @Query('keyword') keyword?: string,
+  @Query('rating') rating?: string,                 // NEW
+  @Query('sortByPrice') sortByPrice?: 'asc' | 'desc' // NEW
+) {
+  const sort =
+    sortByPrice && (sortByPrice === 'asc' || sortByPrice === 'desc')
+      ? sortByPrice
+      : undefined;
+
+  return this.productsService.findAll(
+    +page,
+    +limit,
+    category,
+    subCategory,
+    brand,
+    keyword,
+    rating ? +rating : undefined,
+    sort
+  );
+}
+
   @Get(':id')
   findOne(@Param('id', ParseObjectIdPipe) id: string) {
     return this.productsService.findOne(id);
@@ -67,7 +96,7 @@ export class ProductsController {
   update(
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() updateProductDto: UpdateProductDto,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() files?: Express.Multer.File[],
   ) {
     return this.productsService.update(id, updateProductDto, files);
   }
