@@ -23,8 +23,8 @@ export default function PaypalReturnPage() {
       try {
         // POST to your backend capture endpoint
         // adjust base URL if needed (NEXT_PUBLIC_API_BASE_URL)
-        const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
-        const resp = await fetch(`${base}/orders/paypal/capture/${token}`, {
+        const base = process.env.NEXT_PUBLIC_API_URL ?? "";
+        const resp = await fetch(`${base}/paypal/capture/${token}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
         });

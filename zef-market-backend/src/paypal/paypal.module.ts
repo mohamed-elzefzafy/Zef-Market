@@ -7,6 +7,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { OrderModule } from 'src/order/order.module';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { PaypalController } from './paypal.controller';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { JwtModule } from '@nestjs/jwt';
     ConfigModule,
     JwtModule,
   ],
+  controllers: [PaypalController],
   providers: [PaypalService],
   exports: [PaypalService],
 })

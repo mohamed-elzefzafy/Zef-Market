@@ -11,6 +11,7 @@ import { TaxAndShippingModule } from 'src/taxAndShipping/taxAndShipping.module';
 import { StripeModule } from 'src/stripe/stripe.module';
 import { UsersModule } from 'src/users/users.module';
 import { PaypalModule } from 'src/paypal/paypal.module';
+import { PaymobModule } from 'src/paymob/paymob.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { PaypalModule } from 'src/paypal/paypal.module';
     UsersModule,
     TaxAndShippingModule,
      forwardRef(()=>  PaypalModule),
+         forwardRef(()=>  PaymobModule),
   ],
   controllers: [OrderController],
   providers: [OrderService],

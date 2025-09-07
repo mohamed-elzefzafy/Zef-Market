@@ -12,7 +12,7 @@ console.log("token", token);
 
   useEffect(() => {
     if (token) {
-      axiosRequest.post(`/paypal/capture/${token}`, {}, {
+      axiosRequest.post(`/api/v1/paypal/capture/${token}`, {}, {
         withCredentials: true, // عشان يبعث الكوكي لو بتستخدم JWT cookies
       })
         .then((res) => {

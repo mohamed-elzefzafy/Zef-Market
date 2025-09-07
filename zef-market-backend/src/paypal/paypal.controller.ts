@@ -16,7 +16,7 @@ import { OrderService } from 'src/order/order.service';
 import { UserRoles } from 'src/shared/enums/roles.enum';
 import { Roles } from 'src/auth/decorator/Roles.decorator';
 
-@Controller('paypal')
+@Controller('api/v1/paypal')
 export class PaypalController {
   constructor(
     private readonly paypalService: PaypalService,

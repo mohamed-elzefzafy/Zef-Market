@@ -20,6 +20,7 @@ import { CouponModule } from './coupon/coupon.module';
 import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
 import { PaypalModule } from './paypal/paypal.module';
+import { PaymobModule } from './paymob/paymob.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { PaypalModule } from './paypal/paypal.module';
     CartModule,
     OrderModule,
     PaypalModule,
+    PaymobModule,
   ],
   controllers: [AppController],
   providers: [],

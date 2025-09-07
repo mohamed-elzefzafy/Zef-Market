@@ -1039,7 +1039,8 @@ export class PaypalService {
       purchase_units: [
         {
           amount: {
-            currency_code: 'USD',
+            // currency_code: 'USD',
+            currency_code: 'EUR',
             value:
               totalOrderPriceAfterDiscount > 0
                 ? totalOrderPriceAfterDiscount.toFixed(2)
