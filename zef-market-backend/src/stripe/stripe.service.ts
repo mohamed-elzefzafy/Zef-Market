@@ -336,11 +336,20 @@ export class StripeService {
   }
 
 
-  constructEvent(rawBody: Buffer, signature: string) {
+//   constructEvent(rawBody: Buffer, signature: string) {
+//   return this.stripe.webhooks.constructEvent(
+//     rawBody,
+//     signature,
+//     this.configService.getOrThrow('STRIPE_WEBHOOK_SECRET'),
+//   );
+// }
+
+constructEvent(rawBody: Buffer, signature: string) {
   return this.stripe.webhooks.constructEvent(
     rawBody,
     signature,
     this.configService.getOrThrow('STRIPE_WEBHOOK_SECRET'),
   );
 }
+
 }
