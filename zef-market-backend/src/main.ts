@@ -18,6 +18,10 @@ async function bootstrap() {
   //   bodyParser.raw({ type: 'application/json' }),
   // );
 
+  app.use('/api/v1/checkout/webhook', 
+  bodyParser.raw({ type: 'application/json' })
+);
+
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
   );

@@ -66,7 +66,7 @@
 
 
 
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { CreateSessionRequestDto } from './dto/create-session.dto';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { CurrentUser } from 'src/auth/decorator/current-user.decorator';
@@ -74,6 +74,7 @@ import { JwtPayloadType } from 'src/shared/types';
 import { Roles } from 'src/auth/decorator/Roles.decorator';
 import { UserRoles } from 'src/shared/enums/roles.enum';
 import { StripeService } from './stripe.service';
+import { Request, Response } from 'express';
 
 @Controller('api/v1/checkout')
 export class StripeController {
@@ -97,8 +98,27 @@ export class StripeController {
   // }
 
 
-  @Post('webhook')
-async handleCheckoutWebhook(@Body() event: any) {
-  return this.stripeService.handleCheckoutWebhook(event);
+//   @Post('webhook')
+// async handleCheckoutWebhook(@Body() event: any) {
+//   return this.stripeService.handleCheckoutWebhook(event);
+// }
+
+
+
+@Post('webhook')
+async handleCheckoutWebhook(@Req() req: Request, @Res() res: Response) {
+  const sig = req.headers['stripe-signature'];
+  const rawBody = (req as any).rawBody;
+
+  let event;
+  try {
+    event = this.stripeService.constructEvent(rawBody, sig as string);
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  await this.stripeService.handleCheckoutWebhook(event);
+  return res.status(200).send({ received: true });
 }
+
 }

@@ -334,4 +334,13 @@ export class StripeService {
 
     return order;
   }
+
+
+  constructEvent(rawBody: Buffer, signature: string) {
+  return this.stripe.webhooks.constructEvent(
+    rawBody,
+    signature,
+    this.configService.getOrThrow('STRIPE_WEBHOOK_SECRET'),
+  );
+}
 }
