@@ -21,7 +21,7 @@
 //   ) {}
 // //   public async createSession(courseId: string, userId: string) {
 // //     const course = await this.courseService.findOneWithoutpopulate(courseId);
-  
+
 // // // if (course.isFree) {
 // // // if (!course.users.includes(userId)) {
 // // //   course.users.push(userId);
@@ -74,7 +74,6 @@
 // //   // ✅ مرر userId مباشرة
 // //   // await this.courseService.updateCheckOut(metadata.courseId, metadata.userId );
 // // }
-
 
 // async createOrderCheckoutSession(
 //   cart: any,
@@ -166,48 +165,86 @@
 
 // }
 
-
-
-
-
-
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreateSessionRequestDto } from './dto/create-session.dto';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
 import { CartService } from 'src/cart/cart.service';
-import { ProductsService } from 'src/products/products.service';
+import { OrderService } from 'src/order/order.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Order } from 'src/order/entities/order.schema';
 import { Model, Types } from 'mongoose';
+import { ProductsService } from 'src/products/products.service';
 
 @Injectable()
 export class StripeService {
-  private stripe: Stripe;
-
   constructor(
+    private readonly stripe: Stripe,
     private readonly configService: ConfigService,
     private readonly cartService: CartService,
     private readonly productsService: ProductsService,
     @InjectModel(Order.name) private readonly orderModel: Model<Order>,
-  ) {
-    // this.stripe = new Stripe(this.configService.getOrThrow('STRIPE_SECRET_KEY'), {
-    //   apiVersion: '2024-06-20',
-    // });
-    this.stripe = new Stripe(
-  this.configService.getOrThrow('STRIPE_SECRET_KEY'),
-  {
-    apiVersion: '2025-07-30.basil', // ✅ خليه زي اللي بيظهر في الـ error
-  },
-);
-  }
+    // private readonly orderService: OrderService,
+  ) {}
+  //   public async createSession(courseId: string, userId: string) {
+  //     const course = await this.courseService.findOneWithoutpopulate(courseId);
 
-  constructEvent(rawBody: Buffer, sig: string) {
-    return this.stripe.webhooks.constructEvent(
-      rawBody,
-      sig,
-      this.configService.getOrThrow('STRIPE_WEBHOOK_SECRET'),
-    );
-  }
+  // // if (course.isFree) {
+  // // if (!course.users.includes(userId)) {
+  // //   course.users.push(userId);
+  // //   await course.save();
+  // //   return {message :`you have subscribed to ${course.title} cousre`}
+  // // } else {
+  // //     return {message :`you already subscribed to ${course.title} cousre`}
+  // // }
+  // // }
+  //     return this.stripe.checkout.sessions.create({
+  //       metadata: {
+  //         courseId,
+  //         userId,
+  //       },
+  //       line_items: [
+  //         {
+  //           price_data: {
+  //             currency: 'usd',
+  //             unit_amount: course.finalPrice * 100,
+  //             product_data: {
+  //               name: course.title,
+  //               description: course.description,
+  //               images: [course.thumbnail.url],
+  //             },
+  //           },
+  //           quantity: 1,
+  //         },
+  //       ],
+  //       mode: 'payment',
+  //       success_url: `${this.configService.getOrThrow('STRIPE_SUCCESS_URL')}/course/${courseId}`,
+  //       cancel_url:   this.configService.getOrThrow('STRIPE_CANCEL_URL'),
+  //     });
+  //   }
+  // async handleCheckoutWebhook(event: any) {
+  //   console.log(event);
+
+  //   if (event.type !== 'checkout.session.completed') return;
+
+  //   const session = await this.stripe.checkout.sessions.retrieve(
+  //     event.data.object.id
+  //   );
+
+  //   const metadata = session.metadata;
+
+  //   if (!metadata || !metadata.courseId || !metadata.userId) {
+  //     throw new NotFoundException("Missing session metadata (courseId/userId)");
+  //   }
+  // console.log("ggggggggggggggggggggggg");
+
+  //   // ✅ مرر userId مباشرة
+  //   // await this.courseService.updateCheckOut(metadata.courseId, metadata.userId );
+  // }
 
   async createOrderCheckoutSession(
     cart: any,
@@ -245,20 +282,22 @@ export class StripeService {
     });
   }
 
-  async handleCheckoutWebhook(event: Stripe.Event) {
+  async handleCheckoutWebhook(event: any) {
     if (event.type !== 'checkout.session.completed') return;
 
-    const session = event.data.object as Stripe.Checkout.Session;
-    const metadata = session.metadata;
+    const session = await this.stripe.checkout.sessions.retrieve(
+      event.data.object.id,
+    );
 
+    const metadata = session.metadata;
     if (!metadata?.userId || !metadata?.cartId) {
       throw new NotFoundException('Missing session metadata');
     }
 
-    // ✅ هات الكارت
+    // هات الكارت تاني
     const cart = await this.cartService.getOrderCart(metadata.userId);
 
-    // ✅ أنشئ الأوردر
+    // أنشئ الأوردر بعد الدفع
     const order = await this.orderModel.create({
       user: new Types.ObjectId(metadata.userId),
       orderItems: cart.cartItems.map((item) => ({
@@ -276,10 +315,9 @@ export class StripeService {
       shipping: Number(metadata.shipping),
       paymentMethodType: 'card',
       isPaid: true,
-      paidAt: new Date(),
     });
 
-    // ✅ خصم من المخزون
+    // خصم من المخزون
     for (const item of cart.cartItems) {
       await this.productsService.updateProductForOrder(
         item.productId._id.toString(),
@@ -287,7 +325,7 @@ export class StripeService {
       );
     }
 
-    // ✅ امسح الكارت
+    // امسح الكارت
     cart.cartItems = [];
     cart.totalPrice = 0;
     cart.totalPriceAfterDiscount = 0;

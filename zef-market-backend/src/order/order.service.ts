@@ -36,158 +36,158 @@ export class OrderService {
     @Inject(forwardRef(() => PaymobService))
     private readonly paymobService: PaymobService,
   ) {}
-  async createOrder(createOrderDto: CreateOrderDto, userId: string) {
-  const cart = await this.cartService.getOrderCart(userId);
+//   async createOrder(createOrderDto: CreateOrderDto, userId: string) {
+//   const cart = await this.cartService.getOrderCart(userId);
 
-  if (cart.cartItems.length === 0) {
-    throw new BadRequestException('Cart is empty');
-  }
+//   if (cart.cartItems.length === 0) {
+//     throw new BadRequestException('Cart is empty');
+//   }
 
-  const user = await this.usersService.findOne(userId);
-  if (!user.country || !user.city || !user.address || !user.phoneNumber) {
-    throw new BadRequestException("please complete your address data to reach you successfully");
-  }
+//   const user = await this.usersService.findOne(userId);
+//   if (!user.country || !user.city || !user.address || !user.phoneNumber) {
+//     throw new BadRequestException("please complete your address data to reach you successfully");
+//   }
 
-  let totalOrderPrice = 0;
+//   let totalOrderPrice = 0;
 
-  for (const item of cart.cartItems) {
-    const product = await this.productsService.checkProductsForOrder(
-      item.productId._id.toString(),
-      item.quantity,
-    );
+//   for (const item of cart.cartItems) {
+//     const product = await this.productsService.checkProductsForOrder(
+//       item.productId._id.toString(),
+//       item.quantity,
+//     );
 
-    if (!product) {
-      throw new BadRequestException(
-        `Product with id ${item.productId._id} no longer exists`,
-      );
-    }
+//     if (!product) {
+//       throw new BadRequestException(
+//         `Product with id ${item.productId._id} no longer exists`,
+//       );
+//     }
 
-    if (product.price !== item.price) {
-      throw new BadRequestException(
-        `Price changed for product ${product.title}`,
-      );
-    }
+//     if (product.price !== item.price) {
+//       throw new BadRequestException(
+//         `Price changed for product ${product.title}`,
+//       );
+//     }
 
-    if (product.stock < item.quantity) {
-      throw new BadRequestException(
-        `Not enough stock for product ${product.title}`,
-      );
-    }
+//     if (product.stock < item.quantity) {
+//       throw new BadRequestException(
+//         `Not enough stock for product ${product.title}`,
+//       );
+//     }
 
-    totalOrderPrice += Number(item.finalPrice) * Number(item.quantity);
-  }
+//     totalOrderPrice += Number(item.finalPrice) * Number(item.quantity);
+//   }
 
-  // حساب الخصومات + الضريبة + الشحن
-  let discount = 0;
-  if (cart.coupons?.length > 0) {
-    for (const c of cart.coupons) {
-      const coupon = await this.couponService.findOneById(c._id.toString());
-      if (coupon?.discount) {
-        discount += coupon.discount;
-      }
-    }
-  }
+//   // حساب الخصومات + الضريبة + الشحن
+//   let discount = 0;
+//   if (cart.coupons?.length > 0) {
+//     for (const c of cart.coupons) {
+//       const coupon = await this.couponService.findOneById(c._id.toString());
+//       if (coupon?.discount) {
+//         discount += coupon.discount;
+//       }
+//     }
+//   }
 
-  const taxAndShipping = await this.taxAndShippingService.findAll();
-  const tax = taxAndShipping?.taxRate ?? 0;
-  const shipping = taxAndShipping?.shippingPrice ?? 0;
+//   const taxAndShipping = await this.taxAndShippingService.findAll();
+//   const tax = taxAndShipping?.taxRate ?? 0;
+//   const shipping = taxAndShipping?.shippingPrice ?? 0;
 
-  const totalOrderPriceAfterDiscount =
-    totalOrderPrice - discount - (tax * totalOrderPrice) / 100 - shipping;
+//   const totalOrderPriceAfterDiscount =
+//     totalOrderPrice - discount - (tax * totalOrderPrice) / 100 - shipping;
 
-  // ⬇️ لو كاش → أنشئ الأوردر فوراً
-  if (createOrderDto.paymentMethodType === 'cash') {
-    const order = await this.orderModel.create({
-      user: new Types.ObjectId(userId),
-      orderItems: cart.cartItems.map((item) => ({
-        productId: item.productId,
-        quantity: item.quantity,
-        price: item.price,
-        finalPrice: item.finalPrice,
-      })),
-      totalOrderPrice,
-      totalOrderPriceAfterDiscount,
-      discount,
-      tax,
-      shipping,
-      paymentMethodType: 'cash',
-    });
+//   // ⬇️ لو كاش → أنشئ الأوردر فوراً
+//   if (createOrderDto.paymentMethodType === 'cash') {
+//     const order = await this.orderModel.create({
+//       user: new Types.ObjectId(userId),
+//       orderItems: cart.cartItems.map((item) => ({
+//         productId: item.productId,
+//         quantity: item.quantity,
+//         price: item.price,
+//         finalPrice: item.finalPrice,
+//       })),
+//       totalOrderPrice,
+//       totalOrderPriceAfterDiscount,
+//       discount,
+//       tax,
+//       shipping,
+//       paymentMethodType: 'cash',
+//     });
 
-    // خصم من المخزون
-    for (const item of cart.cartItems) {
-      await this.productsService.updateProductForOrder(
-        item.productId._id.toString(),
-        item.quantity,
-      );
-    }
+//     // خصم من المخزون
+//     for (const item of cart.cartItems) {
+//       await this.productsService.updateProductForOrder(
+//         item.productId._id.toString(),
+//         item.quantity,
+//       );
+//     }
 
-    // امسح الكارت
-    cart.cartItems = [];
-    cart.totalPrice = 0;
-    cart.totalPriceAfterDiscount = 0;
-    cart.coupons = [];
-    await cart.save();
+//     // امسح الكارت
+//     cart.cartItems = [];
+//     cart.totalPrice = 0;
+//     cart.totalPriceAfterDiscount = 0;
+//     cart.coupons = [];
+//     await cart.save();
 
-    return order;
-  }
+//     return order;
+//   }
 
-  // ✅ Stripe
-  if (createOrderDto.paymentMethodType === 'stripe') {
-    return this.stripeService.createOrderCheckoutSession(
-      cart,
-      userId,
-      totalOrderPrice,
-      totalOrderPriceAfterDiscount,
-      discount,
-      tax,
-      shipping,
-    );
-  }
+//   // ✅ Stripe
+//   if (createOrderDto.paymentMethodType === 'stripe') {
+//     return this.stripeService.createOrderCheckoutSession(
+//       cart,
+//       userId,
+//       totalOrderPrice,
+//       totalOrderPriceAfterDiscount,
+//       discount,
+//       tax,
+//       shipping,
+//     );
+//   }
 
 
   
-  // 🔵 PayPal
-if (createOrderDto.paymentMethodType === 'paypal') {
-  const paypalOrder = await this.paypalService.createOrderCheckoutSession({
-    cart,
-    userId,
-    totalOrderPrice,
-    totalOrderPriceAfterDiscount,
-    discount,
-    tax,
-    shipping,
-  });
+//   // 🔵 PayPal
+// if (createOrderDto.paymentMethodType === 'paypal') {
+//   const paypalOrder = await this.paypalService.createOrderCheckoutSession({
+//     cart,
+//     userId,
+//     totalOrderPrice,
+//     totalOrderPriceAfterDiscount,
+//     discount,
+//     tax,
+//     shipping,
+//   });
 
-  return {
-    redirectUrl: paypalOrder.redirectUrl,
-    orderId: paypalOrder.orderId, // ✅ هنا orderId مش id
-  };
-}
+//   return {
+//     redirectUrl: paypalOrder.redirectUrl,
+//     orderId: paypalOrder.orderId, // ✅ هنا orderId مش id
+//   };
+// }
 
-    // 🟣 Paymob
-    // if (createOrderDto.paymentMethodType === 'paymob') {
-    //   return this.paymobService.createOrder(
-    //     cart,
-    //     userId,
-    //     totalOrderPrice,
-    //     totalOrderPriceAfterDiscount,
-    //     discount,
-    //     tax,
-    //     shipping,
-    //   );
-    // }
+//     // 🟣 Paymob
+//     // if (createOrderDto.paymentMethodType === 'paymob') {
+//     //   return this.paymobService.createOrder(
+//     //     cart,
+//     //     userId,
+//     //     totalOrderPrice,
+//     //     totalOrderPriceAfterDiscount,
+//     //     discount,
+//     //     tax,
+//     //     shipping,
+//     //   );
+//     // }
 
-if (createOrderDto.paymentMethodType === 'paymob') {
-  const paymobOrder = await this.paymobService.createOrderCheckoutSession(totalOrderPrice);
+// if (createOrderDto.paymentMethodType === 'paymob') {
+//   const paymobOrder = await this.paymobService.createOrderCheckoutSession(totalOrderPrice);
 
-  return {
-    _id: paymobOrder.orderId,
-    url: paymobOrder.iframeUrl,
-    paymentMethodType: 'paymob',
-  };
-}
-    throw new BadRequestException('Invalid payment method type');
-}
+//   return {
+//     _id: paymobOrder.orderId,
+//     url: paymobOrder.iframeUrl,
+//     paymentMethodType: 'paymob',
+//   };
+// }
+//     throw new BadRequestException('Invalid payment method type');
+// }
 
 
 // async createOrder(createOrderDto: CreateOrderDto, userId: string) {
@@ -1126,6 +1126,155 @@ if (createOrderDto.paymentMethodType === 'paymob') {
 
   //   throw new BadRequestException('Invalid payment method type');
   // }
+
+
+  
+  async createOrder(createOrderDto: CreateOrderDto, userId: string) {
+  const cart = await this.cartService.getOrderCart(userId);
+
+  if (cart.cartItems.length === 0) {
+    throw new BadRequestException('Cart is empty');
+  }
+
+  let totalOrderPrice = 0;
+
+  for (const item of cart.cartItems) {
+    const product = await this.productsService.checkProductsForOrder(
+      item.productId._id.toString(),
+      item.quantity,
+    );
+
+    if (!product) {
+      throw new BadRequestException(
+        `Product with id ${item.productId._id} no longer exists`,
+      );
+    }
+
+    if (product.price !== item.price) {
+      throw new BadRequestException(
+        `Price changed for product ${product.title}`,
+      );
+    }
+
+    if (product.stock < item.quantity) {
+      throw new BadRequestException(
+        `Not enough stock for product ${product.title}`,
+      );
+    }
+
+    totalOrderPrice += Number(item.finalPrice) * Number(item.quantity);
+  }
+
+  // حساب الخصومات + الضريبة + الشحن
+  let discount = 0;
+  if (cart.coupons?.length > 0) {
+    for (const c of cart.coupons) {
+      const coupon = await this.couponService.findOneById(c._id.toString());
+      if (coupon?.discount) {
+        discount += coupon.discount;
+      }
+    }
+  }
+
+  const taxAndShipping = await this.taxAndShippingService.findAll();
+  const tax = taxAndShipping?.taxRate ?? 0;
+  const shipping = taxAndShipping?.shippingPrice ?? 0;
+
+  const totalOrderPriceAfterDiscount =
+    totalOrderPrice - discount - (tax * totalOrderPrice) / 100 - shipping;
+
+  // ⬇️ لو كاش → أنشئ الأوردر فوراً
+  if (createOrderDto.paymentMethodType === 'cash') {
+    const order = await this.orderModel.create({
+      user: new Types.ObjectId(userId),
+      orderItems: cart.cartItems.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price,
+        finalPrice: item.finalPrice,
+      })),
+      totalOrderPrice,
+      totalOrderPriceAfterDiscount,
+      discount,
+      tax,
+      shipping,
+      paymentMethodType: 'cash',
+    });
+
+    // خصم من المخزون
+    for (const item of cart.cartItems) {
+      await this.productsService.updateProductForOrder(
+        item.productId._id.toString(),
+        item.quantity,
+      );
+    }
+
+    // امسح الكارت
+    cart.cartItems = [];
+    cart.totalPrice = 0;
+    cart.totalPriceAfterDiscount = 0;
+    cart.coupons = [];
+    await cart.save();
+
+    return order;
+  }
+
+  // ⬇️ لو كارد → روح اعمل checkout session في Stripe
+  if (createOrderDto.paymentMethodType === 'stripe') {
+    return this.stripeService.createOrderCheckoutSession(
+      cart,
+      userId,
+      totalOrderPrice,
+      totalOrderPriceAfterDiscount,
+      discount,
+      tax,
+      shipping,
+    );
+  }
+
+    // 🔵 PayPal
+if (createOrderDto.paymentMethodType === 'paypal') {
+  const paypalOrder = await this.paypalService.createOrderCheckoutSession({
+    cart,
+    userId,
+    totalOrderPrice,
+    totalOrderPriceAfterDiscount,
+    discount,
+    tax,
+    shipping,
+  });
+
+  return {
+    redirectUrl: paypalOrder.redirectUrl,
+    orderId: paypalOrder.orderId, // ✅ هنا orderId مش id
+  };
+}
+
+    // 🟣 Paymob
+    // if (createOrderDto.paymentMethodType === 'paymob') {
+    //   return this.paymobService.createOrder(
+    //     cart,
+    //     userId,
+    //     totalOrderPrice,
+    //     totalOrderPriceAfterDiscount,
+    //     discount,
+    //     tax,
+    //     shipping,
+    //   );
+    // }
+
+if (createOrderDto.paymentMethodType === 'paymob') {
+  const paymobOrder = await this.paymobService.createOrderCheckoutSession(totalOrderPrice);
+
+  return {
+    _id: paymobOrder.orderId,
+    url: paymobOrder.iframeUrl,
+    paymentMethodType: 'paymob',
+  };
+}
+    throw new BadRequestException('Invalid payment method type');
+}
+
 
   async updateOrder(id: string, data: {
     isPaid?: boolean;

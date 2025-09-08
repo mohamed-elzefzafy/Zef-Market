@@ -408,7 +408,7 @@ export default function CheckoutPage() {
           onClick={() => handleCheckout("stripe")}
           disabled={isLoading}
         >
-          Pay with Stripe
+          Pay with card (Stripe)
         </Button>
         <Button
           variant="contained"
@@ -416,7 +416,7 @@ export default function CheckoutPage() {
           onClick={() => handleCheckout("paypal")}
           disabled={isLoading}
         >
-          Pay with PayPal
+          Pay with card (PayPal)
         </Button>
         <Button
           variant="contained"
@@ -424,7 +424,7 @@ export default function CheckoutPage() {
           onClick={() => handleCheckout("paymob")}
           disabled={isLoading}
         >
-          Pay with Paymob
+          Pay with card (Paymob)
         </Button>
       </Stack>
     </Box>
