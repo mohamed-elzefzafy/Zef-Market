@@ -38,11 +38,11 @@ export class Cart {
   @Prop({ type: Number })
   totalPriceAfterDiscount?: number; // إجمالي بعد الخصم (لو فيه كوبونات)
 
-@Prop({
-  type: [{ type: Types.ObjectId, ref: Coupon.name }],
-  default: [],
-})
-coupons: Types.ObjectId[];
+  @Prop({
+    type: [{ type: Types.ObjectId, ref: Coupon.name }],
+    default: [],
+  })
+  coupons: Types.ObjectId[];
 
   // كارت واحد لليوزر (unique) — فعل/الغها حسب تصميمك
   @Prop({

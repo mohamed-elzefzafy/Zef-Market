@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 import { ProductsService } from 'src/products/products.service';
@@ -49,14 +53,21 @@ export class CartService {
 
       if (itemIndex > -1) {
         // المنتج موجود → نزود الكمية
-        if ((cart.cartItems[itemIndex].quantity + createCartDto.quantity) > product.stock) {
-            throw new BadRequestException(`the product ${product.title} hasn't enough stock`)
+        if (
+          cart.cartItems[itemIndex].quantity + createCartDto.quantity >
+          product.stock
+        ) {
+          throw new BadRequestException(
+            `the product ${product.title} hasn't enough stock`,
+          );
         }
         cart.cartItems[itemIndex].quantity += createCartDto.quantity || 1;
       } else {
         // المنتج مش موجود → ضيفه
         if (product.stock < createCartDto.quantity) {
-          throw new BadRequestException(`the product ${product.title} hasn't enough stock`)
+          throw new BadRequestException(
+            `the product ${product.title} hasn't enough stock`,
+          );
         }
         cart.cartItems.push({
           productId: product._id,
@@ -72,6 +83,81 @@ export class CartService {
     return cart.populate('cartItems.productId');
   }
 
+  async increaseCartproductQuantity(
+    userId: string,
+    removeProductFromCartDto: RemoveProductFromCartDto,
+  ) {
+    const product = await this.productsService.findOne(
+      removeProductFromCartDto.productId,
+    );
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    let cart = await this.cartModel.findOne({ user: userId });
+
+    if (!cart) {
+      throw new NotFoundException('cart not found');
+    } else {
+      // لو فيه كارت بالفعل
+      const itemIndex = cart.cartItems.findIndex(
+        (item) =>
+          item.productId.toString() ===
+          removeProductFromCartDto.productId.toString(),
+      );
+      console.log('itemIndex', itemIndex);
+
+      if (itemIndex > -1) {
+        cart.cartItems[itemIndex].quantity += 1;
+
+        await cart.save();
+      } else {
+        throw new NotFoundException('product not found in cart');
+      }
+    }
+
+    cart = await this.getCurrentUserCart(userId);
+    return cart.populate('cartItems.productId');
+  }
+
+  async decreaseCartproductQuantity(
+    userId: string,
+    removeProductFromCartDto: RemoveProductFromCartDto,
+  ) {
+    const product = await this.productsService.findOne(
+      removeProductFromCartDto.productId,
+    );
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    let cart = await this.cartModel.findOne({ user: userId });
+
+    if (!cart) {
+      throw new NotFoundException('cart not found');
+    } else {
+      // لو فيه كارت بالفعل
+      const itemIndex = cart.cartItems.findIndex(
+        (item) =>
+          item.productId.toString() ===
+          removeProductFromCartDto.productId.toString(),
+      );
+      console.log('itemIndex', itemIndex);
+
+      if (itemIndex > -1) {
+        if (cart.cartItems[itemIndex].quantity > 1) {
+          cart.cartItems[itemIndex].quantity -= 1;
+        }
+
+        await cart.save();
+      } else {
+        throw new NotFoundException('product not found in cart');
+      }
+    }
+
+    cart = await this.getCurrentUserCart(userId);
+    return cart.populate('cartItems.productId');
+  }
   async changeCartproductQuantity(
     userId: string,
     createCartDto: CreateCartDto,
@@ -142,7 +228,9 @@ export class CartService {
   }
 
   async getCurrentUserCart(userId: string) {
-    const cart = await this.cartModel.findOne({ user: userId }).populate('cartItems.productId');;
+    const cart = await this.cartModel
+      .findOne({ user: userId })
+      // .populate('cartItems.productId');
 
     if (!cart) {
       throw new NotFoundException('cart not found');
@@ -190,7 +278,7 @@ export class CartService {
 
     await cart.save();
 
-    return cart;
+    return cart.populate('cartItems.productId');;
   }
 
   async removeProductFromCart(

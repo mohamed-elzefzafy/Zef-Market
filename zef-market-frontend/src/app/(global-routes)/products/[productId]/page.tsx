@@ -1,7 +1,9 @@
 "use client";
-
-import { useAppSelector } from "@/redux/hooks";
-import { useGetOneProductQuery } from "@/redux/slices/api/productApiSlice";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import {
+  useGetOneProductQuery,
+  useGetRelatedProductQuery,
+} from "@/redux/slices/api/productApiSlice";
 import {
   useCreateReviewMutation,
   useDeleteReviewByAdminMutation,
@@ -30,14 +32,31 @@ import {
   MenuItem,
 } from "@mui/material";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { SetStateAction, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { BorderColor, Delete, DeleteForever } from "@mui/icons-material";
+import {
+  BorderColor,
+  Delete,
+  DeleteForever,
+  Favorite,
+  FavoriteBorder,
+} from "@mui/icons-material";
+import ProductCard from "../_components/ProductCard";
+import { useAddToCartMutation } from "@/redux/slices/api/cartApiSlice";
+import { setCartItemsLength } from "@/redux/slices/cartSlice";
+import { useGetOneUserQuery } from "@/redux/slices/api/authApiSlice";
+import {
+  useAddProductToWishlistMutation,
+  useRemoveProductFromWishlistMutation,
+} from "@/redux/slices/api/wislistApiSlice";
+import { setCredentials } from "@/redux/slices/authSlice";
 
 export default function ProductDetailsPage() {
   const { productId } = useParams();
   const theme = useTheme();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
   const { userInfo } = useAppSelector((state) => state?.auth);
   const { data: reviews, refetch } = useGetReviewsQuery(productId as string);
 
@@ -48,12 +67,26 @@ export default function ProductDetailsPage() {
   const [rating, setRating] = useState<number | string>("");
   const [comment, setComment] = useState("");
 
+  const { data: user, refetch: refetchUser } = useGetOneUserQuery(userInfo._id);
+  const [addProductToWishlist] = useAddProductToWishlistMutation();
+  const [removeProductFromWishlist] = useRemoveProductFromWishlistMutation();
+
+  const [addToCart] = useAddToCartMutation();
+
   const {
     data: product,
     isLoading,
     isError,
     error,
+    refetch: refetchProduct,
   } = useGetOneProductQuery(productId as string);
+  const { data: relatedProducts } = useGetRelatedProductQuery(
+    productId as string
+  );
+
+  const productsRelated = relatedProducts?.filter(
+    (prod) => prod._id !== product?._id
+  );
 
   const [selectedImage, setSelectedImage] = useState(product?.images[0]?.url);
   useEffect(() => {
@@ -95,6 +128,7 @@ export default function ProductDetailsPage() {
       setComment("");
       setRating(0);
       refetch();
+      refetchProduct();
       toast.success("review added successfully");
     } catch (error) {
       const errorMessage = (error as { data?: { message?: string } }).data
@@ -137,7 +171,9 @@ export default function ProductDetailsPage() {
         body: { comment, rating },
       }).unwrap();
       toast.success("Review updated successfully");
-      //  refetch();
+      refetch();
+      refetchProduct();
+      router.refresh();
       setshowAddButtonState(false);
       setComment("");
       setRating(0);
@@ -153,6 +189,8 @@ export default function ProductDetailsPage() {
     try {
       await deleteReview(reviewId).unwrap();
       refetch();
+      refetchProduct();
+      router.refresh();
       toast.success("Review deleted successfully");
     } catch (error) {
       const errorMessage = (error as { data?: { message?: string } }).data
@@ -165,10 +203,62 @@ export default function ProductDetailsPage() {
     try {
       await deleteReviewByAdmin(reviewId).unwrap();
       refetch();
+      refetchProduct();
+      router.refresh();
     } catch (error) {
       const errorMessage = (error as { data?: { message?: string } }).data
         ?.message;
       toast.error(errorMessage as string);
+    }
+  };
+
+  const addToCartHandler = async () => {
+    if (!product) {
+      return;
+    }
+    try {
+      const res = await addToCart({
+        productId: product._id,
+        quantity: 1,
+      }).unwrap();
+      console.log(res?.cartItems?.length);
+      dispatch(setCartItemsLength(res?.cartItems?.length));
+    } catch (error) {
+      const errorMessage = (error as { data?: { message?: string } }).data
+        ?.message;
+      toast.error(errorMessage as string);
+    }
+  };
+
+  const handleAddProductToWishlist = async () => {
+    try {
+      const user = await addProductToWishlist({ product: product?._id }).unwrap();
+      router.refresh();
+      dispatch(setCredentials({ ...user }));
+      // refetch();
+      refetchUser();
+    } catch (error) {
+      console.error("add product to wishlist error:", error);
+      const errorMessage =
+        (error as { data?: { message?: string } }).data?.message ||
+        "Failed to add product to wishlist";
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleRemoveProductFromWishlist = async () => {
+    try {
+      const user = await removeProductFromWishlist(product?._id).unwrap();
+      router.refresh();
+      dispatch(setCredentials({ ...user }));
+      // refetch();
+      refetchUser();
+    } catch (error) {
+      console.error("remove course from wishlist error:", error);
+      const errorMessage =
+        (error as { data?: { message?: string } }).data?.message ||
+        "Failed to remove course from wishlist";
+      toast.error(errorMessage);
     }
   };
 
@@ -342,21 +432,45 @@ export default function ProductDetailsPage() {
             </Typography>
 
             {/* Buttons */}
-            <Stack direction="row" spacing={2} mt={2}>
+            <Stack direction={{xs : "column",md:"row"}} spacing={2} mt={2} >
               <Button
                 variant="contained"
                 size="large"
-                sx={{ borderRadius: "30px", px: 4 }}
+                sx={{ borderRadius: "30px", px: {sx: 0.5 ,md:4} ,textTransform:"capitalize"}}
+                onClick={addToCartHandler}
               >
                 Add to Cart
               </Button>
-              <Button
+              {/* <Button
                 variant="outlined"
                 size="large"
                 sx={{ borderRadius: "30px", px: 4 }}
               >
                 Buy Now
-              </Button>
+              </Button> */}
+
+              {userInfo.email && userInfo.role === "user" && (
+                <Button
+                  variant="outlined"
+                  size="large"
+                  sx={{ borderRadius: "30px" ,textTransform:"capitalize",  px: {sx: 0.5 ,md:4},mt:{xs : 2 , md:0}}}
+                  endIcon={
+                    user?.wishlist.find((w) => w._id === product._id) ? (
+                      <Favorite
+                        sx={{ color: "red" }}
+                        onClick={handleRemoveProductFromWishlist}
+                      />
+                    ) : (
+                      <FavoriteBorder
+                        sx={{ color: "red" }}
+                        onClick={handleAddProductToWishlist}
+                      />
+                    )
+                  }
+                >
+            {user?.wishlist.find((w) => w._id === product._id) ? "remove from Wishlist": "Add To Wishlist"}
+                </Button>
+              )}
             </Stack>
           </Stack>
         </Box>
@@ -364,17 +478,28 @@ export default function ProductDetailsPage() {
 
       {/* reviews  */}
 
-      <Divider />
+      <Divider sx={{mt:3}}/>
 
       <Box mt={5}>
-        <Typography
-          variant="h5"
-          mb={2}
-          textAlign={{ xs: "center", md: "left" }}
-        >
-          <Chip label={`${product.title}`} color="success" size="medium" />{" "}
-          Reviews
-        </Typography>
+        {reviews && reviews?.length > 0 ? (
+          <Typography
+            variant="h5"
+            mb={2}
+            textAlign={{ xs: "center", md: "left" }}
+          >
+            <Chip label={`${product.title}`} color="success" size="medium" />{" "}
+            Reviews
+          </Typography>
+        ) : (
+          <Typography
+            variant="h5"
+            mb={2}
+            textAlign={{ xs: "center", md: "left" }}
+          >
+            No Reviews for{" "}
+            <Chip label={`${product.title}`} color="success" size="medium" />
+          </Typography>
+        )}
         <Divider />
 
         {reviews &&
@@ -506,7 +631,7 @@ export default function ProductDetailsPage() {
                   mt: 2,
                   bgcolor: theme.palette.mainColor?.main,
                   color: "white",
-                  textTransform:"capitalize"
+                  textTransform: "capitalize",
                 }}
                 onClick={updateReviewFunc}
               >
@@ -519,7 +644,7 @@ export default function ProductDetailsPage() {
                   mt: 2,
                   bgcolor: theme.palette.mainColor?.main,
                   color: "white",
-                      textTransform:"capitalize"
+                  textTransform: "capitalize",
                 }}
                 onClick={createReviewHandler}
               >
@@ -529,27 +654,28 @@ export default function ProductDetailsPage() {
           </Stack>
         )}
       </Box>
-      <Divider />
+      <Divider sx={{ my: 2 }} />
       {/* related products  */}
-      {/* <Box sx={{mt :7}}>
-<Typography variant="h5" sx={{ mb: 3}}>
-        Related Products :{" "}
-      </Typography>
-      <Stack
-        sx={{
-          flexDirection: "row",
-          flexWrap: "wrap",
-          gap: 2,
-          justifyContent: {xs : "center" , md : "flex-start"},
-          alignItems: "center",
-        }}
-      >
-      {procutsCategoryRelated?.map(product =>
-             <ProductCard key={product._id} productInfo={product} />
-
-      )}
-    </Stack>
-</Box> */}
+      <Box sx={{ mt: 7 }}>
+        <Typography variant="h5" sx={{ mb: 3 }}>
+          {productsRelated && productsRelated?.length > 0
+            ? "Related Products"
+            : "No Related Products Found"}
+        </Typography>
+        <Stack
+          sx={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 2,
+            justifyContent: { xs: "center", md: "flex-start" },
+            alignItems: "center",
+          }}
+        >
+          {productsRelated?.map((product) => (
+            <ProductCard key={product._id} productInfo={product} />
+          ))}
+        </Stack>
+      </Box>
     </Container>
   );
 }

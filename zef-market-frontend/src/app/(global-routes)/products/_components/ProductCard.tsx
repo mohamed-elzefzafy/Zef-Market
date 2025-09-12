@@ -1,104 +1,12 @@
-// import Card from '@mui/material/Card';
-// import CardActions from '@mui/material/CardActions';
-// import CardContent from '@mui/material/CardContent';
-// import CardMedia from '@mui/material/CardMedia';
-
-// import Typography from '@mui/material/Typography';
-// import { Button, IconButton, Rating, Stack } from '@mui/material';
-// import { Favorite, FavoriteBorderOutlined } from '@mui/icons-material';
-// import { QueryDefinition } from '@reduxjs/toolkit/query';
-// import { QueryActionCreatorResult } from '@reduxjs/toolkit/query';
-// // import { useState } from 'react';
-// import toast from 'react-hot-toast';
-// import { IProduct } from '@/types/product';
-// import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-// import { useRouter } from 'next/navigation';
-// import { Box } from '@mui/system';
-
-// interface IProductCardProps {
-//   productInfo : IProduct,
-//   refetchWishlist ?: () => QueryActionCreatorResult<QueryDefinition<string | void, any, any, IProduct[], any>>
-// }
-// const  ProductCard = ({productInfo : {category , title , description , images , price,discount , subCategory,finalPrice, rating , _id} , refetchWishlist} : IProductCardProps) => {
-//   const router = useRouter();
-//   const dispatch = useAppDispatch();
-// // const [toggleWishlist] = useToggleWishlistMutation();
-//   const { userInfo } = useAppSelector((state) => state?.auth);
-
-// // const [addToCart] = useAddToCartMutation();
-
-// // const addToCartHandler = async () => {
-// //   try {
-// //    const res = await addToCart({ productId : _id, quantity: 1 }).unwrap();
-// //     console.log(res?.cartItems?.length);
-// //     dispatch(setCartItemLength(res?.cartItems?.length))
-
-// //   } catch (error) {
-// //     const errorMessage = (error as { data?: { message?: string } }).data
-// //       ?.message;
-// //     toast.error(errorMessage as string);
-// //   }
-// // };
-
-// // const onToggleWishlistHandler = async() => {
-// //   try {
-// //     const res = await toggleWishlist({productId: _id}).unwrap();
-// //     dispatch(setCredentials(res));
-// //     if (refetchWishlist) {
-
-// //       refetchWishlist();
-// //       console.log(res);
-// //     }
-// //   } catch (error) {
-// //     // Handle error
-// //   }
-// // }
-
-//   return (
-//     <Card  sx={{ width: 250 }}>
-//       <CardMedia
-//         component="img"
-//         alt="green iguana"
-//         height="140"
-//         width={"100%"}
-//         image={images[0]?.url}
-//         sx={{cursor: "pointer"}}
-//         onClick={() => router.push(`/products/${_id}`)}
-//       />
-//       <CardContent sx={{pb:0 , cursor :"pointer"}} onClick={() => router.push(`/products/${_id}`)} >
-//         <Typography gutterBottom variant="h5" component="div">
-//           {title}
-//         </Typography>
-//         <Typography variant="body2" color="text.secondary">
-//         {description}
-//         </Typography>
-//         <Stack sx={{flexDirection : "row" , justifyContent : "space-between" , alignItems : "center" , mt : 1}}>
-//           <Typography variant="body1" >Price</Typography>
-//         <Stack flexDirection="row" justifyContent={"center"} alignItems={"center"} gap={1}>
-//             { discount > 0 && <Typography variant="body1" sx={{textDecoration: "line-through",   color: "text.disabled"}}>{price} </Typography>}
-//           <Typography variant="body1" >{finalPrice} $</Typography>
-//         </Stack>
-//         </Stack>
-//       <Stack  direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
-//       <Rating name="read-only" value={rating} readOnly size='small' sx={{mt : 1}} precision={0.5}/>
-//       <Typography variant="body1" fontSize={"13px"}> {category.title}</Typography>
-//       </Stack>
-//       </CardContent>
-//       <CardActions sx={{justifyContent : "space-between"}}>
-//         {/* <Button  onClick={addToCartHandler} >Add to cart</Button> */}
-//      {/* <IconButton onClick={onToggleWishlistHandler}>
-//      {userInfo.wishList.find(p => p._id === _id) ?   <Favorite color="error"/>  : <FavoriteBorderOutlined/>}
-//      </IconButton> */}
-//       </CardActions>
-//     </Card>
-//   );
-// }
-
-// export default ProductCard;
-
 "use client";
-
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { useGetOneUserQuery } from "@/redux/slices/api/authApiSlice";
+import { useAddToCartMutation } from "@/redux/slices/api/cartApiSlice";
+import { useAddProductToWishlistMutation, useRemoveProductFromWishlistMutation } from "@/redux/slices/api/wislistApiSlice";
+import { setCredentials } from "@/redux/slices/authSlice";
+import { setCartItemsLength } from "@/redux/slices/cartSlice";
 import { IProduct } from "@/types/product";
+import { Favorite, FavoriteBorder } from "@mui/icons-material";
 import {
   Card,
   CardContent,
@@ -116,27 +24,15 @@ import {
   QueryDefinition,
 } from "@reduxjs/toolkit/query";
 import { useRouter } from "next/navigation";
-
-// type ProductCardProps = {
-//   title: string;
-//   description: string;
-//   images: { url: string; public_id: string }[];
-//   price: number;
-//   finalPrice: number;
-//   discount?: number;
-//   rating?: number;
-//   reviewsNumber?: number;
-//   category?: { name: string };
-//   subCategory?: { name: string };
-// };
+import toast from "react-hot-toast";
 
 interface IProductCardProps {
   productInfo: IProduct;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   refetchWishlist?: () => QueryActionCreatorResult<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     QueryDefinition<string | void, any, any, IProduct[], any>
   >;
+  refetch? : ()=>void,
 }
 const ProductCard = ({
   productInfo: {
@@ -151,11 +47,70 @@ const ProductCard = ({
     rating,
     _id,
   },
+  refetch,
   refetchWishlist,
 }: IProductCardProps) => {
   const theme = useTheme();
   const router = useRouter();
+    const dispatch = useAppDispatch();
+      const { userInfo } = useAppSelector((state) => state?.auth);
+      const { data: user,refetch: refetchUser } = useGetOneUserQuery(userInfo._id);
+  const [addToCart] = useAddToCartMutation();
+  const [addProductToWishlist] = useAddProductToWishlistMutation();
+  const [removeProductFromWishlist] = useRemoveProductFromWishlistMutation();
 
+    const addToCartHandler = async () => {
+      if (!_id) {
+        return;
+      }
+      try {
+        const res = await addToCart({
+          productId: _id,
+          quantity: 1,
+        }).unwrap();
+        console.log(res?.cartItems?.length);
+        dispatch(setCartItemsLength(res?.cartItems?.length));
+      } catch (error) {
+        const errorMessage = (error as { data?: { message?: string } }).data
+          ?.message;
+        toast.error(errorMessage as string);
+      }
+    };
+
+      const handleAddProductToWishlist = async () => {
+    try {
+      const user = await addProductToWishlist({ product: _id }).unwrap();
+      router.refresh();
+      dispatch(setCredentials({ ...user }));
+      // refetch();
+      refetchUser();
+    } catch (error) {
+      console.error("add product to wishlist error:", error);
+      const errorMessage =
+        (error as { data?: { message?: string } }).data?.message ||
+        "Failed to add product to wishlist";
+      toast.error(errorMessage);
+    }
+  };
+
+
+    const handleRemoveProductFromWishlist = async () => {
+    try {
+    const user =  await removeProductFromWishlist(_id).unwrap();
+      router.refresh();
+      dispatch(setCredentials({ ...user }));
+      // refetch();
+        refetchUser();
+    } catch (error) {
+      console.error("remove course from wishlist error:", error);
+      const errorMessage =
+        (error as { data?: { message?: string } }).data?.message ||
+        "Failed to remove course from wishlist";
+      toast.error(errorMessage);
+    }
+  };
+
+    
   return (
     <Card
       sx={{
@@ -163,11 +118,9 @@ const ProductCard = ({
         width: "100%",
         borderRadius: 3,
         boxShadow: 4,
-      cursor: "pointer",
         transition: "0.3s",
         "&:hover": { boxShadow: 8, transform: "translateY(-4px)" },
       }}
-       onClick={() => router.push(`/products/${_id}`)}
     >
       {/* Product Image */}
       <CardMedia
@@ -179,12 +132,14 @@ const ProductCard = ({
           objectFit: "cover",
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12,
+            cursor: "pointer",
         }}
+           onClick={() => router.push(`/products/${_id}`)}
       />
 
       <CardContent>
         {/* Title */}
-        <Typography variant="h6" fontWeight="bold" noWrap sx={{ mb: 0.5 }}>
+        <Typography variant="h6" fontWeight="bold" noWrap sx={{ mb: 0.5 ,cursor: "pointer",}} onClick={() => router.push(`/products/${_id}`)}>
           {title}
         </Typography>
 
@@ -221,16 +176,35 @@ const ProductCard = ({
 </Stack>
 
         {/* Rating */}
-        <Stack direction="row" alignItems="center" spacing={0.5}>
-          <Rating value={rating || 0} precision={0.5} size="small" readOnly />
+        <Stack direction="row" alignItems="center" justifyContent={"space-between"} spacing={0.5}>
+        <Stack flexDirection={"row"} gap={1}>
+            <Rating value={rating || 0} precision={0.5} size="small" readOnly />
           <Typography variant="body2" color="text.secondary">
             ({rating || 0})
           </Typography>
         </Stack>
 
+                {(userInfo.email && userInfo.role === "user"  && (
+                <Button>
+                  {" "}
+                  {user?.wishlist.find((w) => w._id === _id) ? (
+                    <Favorite
+                      sx={{ color: "red" }}
+                      onClick={handleRemoveProductFromWishlist}
+                    />
+                  ) : (
+                    <FavoriteBorder
+                      sx={{ color: "red" }}
+                      onClick={handleAddProductToWishlist}
+                    />
+                  )}{" "}
+                </Button>
+              ))}
+        </Stack>
+
         {/* Actions */}
         <Box mt={2}>
-          <Button variant="contained" color="primary" fullWidth>
+          <Button variant="contained" color="primary" fullWidth onClick={addToCartHandler}>
             Add to Cart
           </Button>
         </Box>

@@ -35,6 +35,28 @@ export class CartController {
     return this.cartService.changeCartproductQuantity(userId, createCartDto);
   }
 
+    @Patch('increase-product-quantity-cart')
+  @Roles([UserRoles.USER])
+  @UseGuards(AuthGuard)
+  async increaseCartproductQuantity(
+    @Body() removeProductFromCartDto: RemoveProductFromCartDto,
+    @CurrentUser() user: JwtPayloadType,
+  ) {
+    const userId = user.id;
+    return this.cartService.increaseCartproductQuantity(userId, removeProductFromCartDto);
+  }
+
+      @Patch('decrease-product-quantity-cart')
+  @Roles([UserRoles.USER])
+  @UseGuards(AuthGuard)
+  async decreaseCartproductQuantity(
+    @Body() removeProductFromCartDto: RemoveProductFromCartDto,
+    @CurrentUser() user: JwtPayloadType,
+  ) {
+    const userId = user.id;
+    return this.cartService.decreaseCartproductQuantity(userId, removeProductFromCartDto);
+  }
+
   @Patch('remove-productFrom-cart')
   @Roles([UserRoles.USER])
   @UseGuards(AuthGuard)

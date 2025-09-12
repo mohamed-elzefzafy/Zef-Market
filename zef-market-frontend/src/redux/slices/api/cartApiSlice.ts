@@ -1,8 +1,21 @@
 import { apiSlice } from "./apiSlice";
 import { ICart } from "@/types/cart";
 
+export interface IAddToCart {
+  quantity: number;
+  productId: string;
+}
+
 export const cartApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    addToCart: builder.mutation<ICart, IAddToCart>({
+      query: (data) => ({
+        url: `/api/v1/cart/add-to-cart`,
+        method: "POST",
+        body: data,
+      }),
+    }),
+
     getCurrentUserCart: builder.query<ICart, void>({
       query: () => ({
         url: `/api/v1/cart/current-user-cart`,
@@ -11,17 +24,51 @@ export const cartApiSlice = apiSlice.injectEndpoints({
       providesTags: ["Cart"],
     }),
 
+    deleteItemFromCart: builder.mutation<ICart, { productId: string }>({
+      query: (data) => ({
+        url: `/api/v1/cart/remove-productFrom-cart`,
+        method: "PATCH",
+        body: data,
+      }),
+    }),
 
     // cartApiSlice.ts
-applyCouponToCart: builder.mutation<ICart, { couponName: string }>({
-  query: (body) => ({
-    url: `/api/v1/cart/upply-coupon-to-cart`, // أو نفس اسم الروت عندك
-    method: "PATCH",
-    body,
-  }),
-  invalidatesTags: ["Cart"],
-}),
+    applyCouponToCart: builder.mutation<ICart, { couponName: string }>({
+      query: (body) => ({
+        url: `/api/v1/cart/upply-coupon-to-cart`, // أو نفس اسم الروت عندك
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Cart"],
+    }),
 
+    changeQuantityForProductCart: builder.mutation<ICart, IAddToCart>({
+      query: (data) => ({
+        url: `/api/v1/cart/change-productQuantity-cart`,
+        method: "PATCH",
+        body: data,
+      }),
+    }),
+
+    increaseCartproductQuantity: builder.mutation<ICart, { productId: string }>(
+      {
+        query: (data) => ({
+          url: `/api/v1/cart/increase-product-quantity-cart`,
+          method: "PATCH",
+          body: data,
+        }),
+      }
+    ),
+
+    decreaseCartproductQuantity: builder.mutation<ICart, { productId: string }>(
+      {
+        query: (data) => ({
+          url: `/api/v1/cart/decrease-product-quantity-cart`,
+          method: "PATCH",
+          body: data,
+        }),
+      }
+    ),
 
     // updateCategory: builder.mutation({
     //   query: ({ payLoad, categoryId }) => ({
@@ -106,4 +153,12 @@ applyCouponToCart: builder.mutation<ICart, { couponName: string }>({
   }),
 });
 
-export const {useGetCurrentUserCartQuery, useApplyCouponToCartMutation} = cartApiSlice;
+export const {
+  useGetCurrentUserCartQuery,
+  useApplyCouponToCartMutation,
+  useAddToCartMutation,
+  useDeleteItemFromCartMutation,
+  useChangeQuantityForProductCartMutation,
+  useIncreaseCartproductQuantityMutation,
+  useDecreaseCartproductQuantityMutation,
+} = cartApiSlice;

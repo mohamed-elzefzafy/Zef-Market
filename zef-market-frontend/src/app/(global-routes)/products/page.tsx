@@ -64,7 +64,11 @@ const ProductsPage = () => {
   const [subCategory, setSubCategory] = useState<string>(
     searchParams.get("subCategory") || ""
   );
-  const [brand, setBrand] = useState<string>(searchParams.get("brand") || "");
+
+    const [brand, setBrand] = useState<string>(
+    searchParams.get("brand") || ""
+  );
+  // const [brand, setBrand] = useState<string>(searchParams.get("brand") || "");
   const [rating, setRating] = useState<number | "">(
     searchParams.get("rating") ? Number(searchParams.get("rating")) : ""
   );
@@ -110,7 +114,7 @@ const ProductsPage = () => {
     sortByPrice,
   ]);
 
-  const { data, isLoading } = useGetProductsQuery(productsQueryString);
+  const { data, isLoading , refetch } = useGetProductsQuery(productsQueryString);
 
   // reset subcategory when category changes
   useEffect(() => {
@@ -411,7 +415,7 @@ const ProductsPage = () => {
               key={product._id}
               sx={{ flex: { xs: "1 0 100%", sm: "1 0 50%", md: "1 0 33.33%", lg: "1 0 25%" } }}
             >
-              <ProductCard productInfo={product} />
+              <ProductCard productInfo={product} refetch={refetch}/>
             </Box>
           ))
         ) : (

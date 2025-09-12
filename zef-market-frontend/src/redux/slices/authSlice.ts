@@ -1,70 +1,70 @@
 import { IUserInfo } from "@/types/auth";
 import { createSlice } from "@reduxjs/toolkit";
 
-
 interface IUserInfoObject {
-  userInfo : IUserInfo
+  userInfo: IUserInfo;
 }
-const initialState : IUserInfoObject ={
-  userInfo : {
+const initialState: IUserInfoObject = {
+  userInfo: {
     _id: "",
     firstName: "",
-    lastName:"",
+    lastName: "",
     email: "",
     profileImage: {
-        url:  "",
-        public_id:  "",
-      },
-    isAccountVerified:  false,
-    verificationCode:  null,
+      url: "",
+      public_id: "",
+    },
+    isAccountVerified: false,
+    verificationCode: null,
     role: "user",
-    wishlist:[],
-  
-    // posts: PostEntity[];
-  
-    // likedPosts: PostEntity[];
-  
-    // comments: CommentEntity[];
-  
-    createdAt:  "",
-    updatedAt:  "",
-},
-}
+    wishlist: [],
+    country: "",
+    city: "",
+    address: "",
+    phoneNumber: "",
+    createdAt: "",
+    updatedAt: "",
+  },
+};
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
-  reducers : {
-    setCredentials : (state , action) => {
+  reducers: {
+    setCredentials: (state, action) => {
       state.userInfo = action.payload;
     },
-    logoutAction : (state ) => {
-      state.userInfo = {   
+    logoutAction: (state) => {
+      state.userInfo = {
         _id: "",
         firstName: "",
-        lastName:"",
+        lastName: "",
         email: "",
         profileImage: {
-            url:  "",
-            public_id:  "",
-          },
-        isAccountVerified:  false,
-        verificationCode:  null,
+          url: "",
+          public_id: "",
+        },
+        isAccountVerified: false,
+        verificationCode: null,
         role: "user",
-        wishlist:[],
-      
+        wishlist: [],
+            country: "",
+    city: "",
+    address: "",
+    phoneNumber: "",
+
         // posts: PostEntity[];
-      
+
         // likedPosts: PostEntity[];
-      
+
         // comments: CommentEntity[];
-      
-        createdAt:  "",
-        updatedAt:  "",
+
+        createdAt: "",
+        updatedAt: "",
       };
     },
-  }
-})
+  },
+});
 
-export const {setCredentials , logoutAction} = authSlice.actions;
+export const { setCredentials, logoutAction } = authSlice.actions;
 export default authSlice.reducer;

@@ -31,6 +31,10 @@ export interface IUserInfo {
   isAccountVerified: boolean;
   verificationCode: number | null;
   role: string;
+  country?: string;
+  city?: string;
+  address?: string;
+  phoneNumber?: string;
   createdAt: string;
   updatedAt: string;
   wishlist: IProduct[];
@@ -39,4 +43,11 @@ export interface IUserInfo {
 export type CloudinaryObject = {
   url: string;
   public_id: string | null;
+};
+
+export type IUserAddresses = {
+  country: string;
+  city: string;
+  address: string;
+  phoneNumber: string;
 };

@@ -71,6 +71,14 @@ export const authApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+
+        updateUserAddress: builder.mutation({
+      query: (data) => ({
+        url: `/api/v1/auth/update-user-address`,
+        method: "PATCH",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -84,4 +92,5 @@ export const {
   useUpdatePasswordMutation,
   useGetOneUserQuery,
   useUpdateUserMutation,
+  useUpdateUserAddressMutation,
 } = authApiSlice;

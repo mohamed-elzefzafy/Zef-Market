@@ -20,7 +20,7 @@ import { BrandService } from 'src/brand/brand.service';
 export class ProductsService {
   constructor(
     @InjectModel(Product.name) private readonly productModel: Model<Product>,
-      @Inject(forwardRef(() => CategoryService))
+    @Inject(forwardRef(() => CategoryService))
     private readonly categoryService: CategoryService,
     private readonly cloudinaryService: CloudinaryService,
     @Inject(forwardRef(() => SubCategoryService))
@@ -149,67 +149,71 @@ export class ProductsService {
   //   };
   // }
 
-public async findAll(
-  page: number,
-  limit: number,
-  category?: string,
-  subCategory?: string,
-  brand?: string,
-  keyword?: string,
-  rating?: number,                     // NEW
-  sortByPrice?: 'asc' | 'desc',        // NEW
-) {
-  const pageNumber = Math.max(1, page);
-  const limitNumber = Math.max(1, limit);
-  const skip = (pageNumber - 1) * limitNumber;
+  public async findAll(
+    page: number,
+    limit: number,
+    category?: string,
+    subCategory?: string,
+    brand?: string,
+    keyword?: string,
+    rating?: number, // NEW
+    sortByPrice?: 'asc' | 'desc', // NEW
+  ) {
+    const pageNumber = Math.max(1, page);
+    const limitNumber = Math.max(1, limit);
+    const skip = (pageNumber - 1) * limitNumber;
 
-  const filter: any = {};
-  if (category) filter.category = category;
-  if (subCategory) filter.subCategory = subCategory;
-  if (brand) filter.brand = brand;
+    const filter: any = {};
+    if (category) filter.category = category;
+    if (subCategory) filter.subCategory = subCategory;
+    if (brand) filter.brand = brand;
 
-  if (keyword) {
-    filter.$or = [
-      { title: { $regex: keyword, $options: 'i' } },
-      { description: { $regex: keyword, $options: 'i' } },
-    ];
+    if (keyword) {
+      filter.$or = [
+        { title: { $regex: keyword, $options: 'i' } },
+        { description: { $regex: keyword, $options: 'i' } },
+      ];
+    }
+
+    if (typeof rating === 'number') {
+      filter.rating = { $gte: rating };
+    }
+
+    const query = this.productModel
+      .find(filter)
+      .populate('category')
+      .populate('subCategory')
+      .populate('brand');
+
+    // ✅ لو فيه sortByPrice استخدمه لوحده. لو مفيش يبقى الافتراضي createdAt
+    const sort: Record<string, 1 | -1> = sortByPrice
+      ? { finalPrice: sortByPrice === 'asc' ? 1 : -1 }
+      : { createdAt: -1 };
+
+    const [products, total] = await Promise.all([
+      query.sort(sort).skip(skip).limit(limitNumber).exec(),
+      this.productModel.countDocuments(filter).exec(),
+    ]);
+
+    const pagesCount = Math.ceil(total / limitNumber);
+
+    return {
+      products,
+      pagination: {
+        total,
+        page: pageNumber,
+        limit: limitNumber,
+        pagesCount,
+      },
+    };
   }
-
-  if (typeof rating === 'number') {
-    filter.rating = { $gte: rating };
-  }
-
-  const query = this.productModel
-    .find(filter)
-    .populate('category')
-    .populate('subCategory')
-    .populate('brand');
-
-  // ✅ لو فيه sortByPrice استخدمه لوحده. لو مفيش يبقى الافتراضي createdAt
-  const sort: Record<string, 1 | -1> =
-    sortByPrice ? { finalPrice: sortByPrice === 'asc' ? 1 : -1 } : { createdAt: -1 };
-
-  const [products, total] = await Promise.all([
-    query.sort(sort).skip(skip).limit(limitNumber).exec(),
-    this.productModel.countDocuments(filter).exec(),
-  ]);
-
-  const pagesCount = Math.ceil(total / limitNumber);
-
-  return {
-    products,
-    pagination: {
-      total,
-      page: pageNumber,
-      limit: limitNumber,
-      pagesCount,
-    },
-  };
-}
-
 
   async findOne(id: string) {
-    const product = await this.productModel.findById(id).populate('category').populate('subCategory').populate('brand');
+    const product = await this.productModel
+      .findById(id)
+      .populate('category')
+      .populate('subCategory')
+      .populate('brand');
     if (!product) {
       throw new NotFoundException(`product with id ${id} not found`);
     }
@@ -217,15 +221,34 @@ public async findAll(
     return product;
   }
 
-    async findOneForCart(id: string) {
+  async findRelatedProduct(id: string) {
+    const product = await this.findOne(id);
+    let relatedProducts: Product[] = [];
+    if (product.brand) {
+      relatedProducts = await this.productModel
+        .find({
+          category: product.category,
+          subCategory: product.subCategory,
+          brand: product.brand,
+        }).populate('category').populate('subCategory').populate('brand').limit(5);
+    } else {
+      relatedProducts = await this.productModel
+        .find({
+          category: product.category,
+          subCategory: product.subCategory,
+        }).populate('category').populate('subCategory').limit(5);
+    }
+    return relatedProducts;
+  }
+
+  async findOneForCart(id: string) {
     const product = await this.productModel.findById(id);
     if (!product) {
-      return null
+      return null;
     }
 
     return product;
   }
-
 
   async findProductsToSubCategory(subCategoryId: string) {
     await this.subCategoryService.findOne(subCategoryId);
@@ -242,15 +265,12 @@ public async findAll(
     return products;
   }
 
-
-    async makeBrandNullAfterDeleteBrand(productId: string) {
+  async makeBrandNullAfterDeleteBrand(productId: string) {
     const product = await this.findOne(productId);
-  product.brand = null;
-  await product.save();
-  return {message : "brand attr became null after delete brand"}
+    product.brand = null;
+    await product.save();
+    return { message: 'brand attr became null after delete brand' };
   }
-
-
 
   async update(
     id: string,
@@ -303,24 +323,40 @@ public async findAll(
     return { message: `product with id ${id} deleted successfully` };
   }
 
-  async checkProductsForOrder(productId : string , quantity : number):Promise<Product| null>{
-    const product = await this.productModel.findOne({_id : productId , stock: { $gte: quantity}});
-    if(!product ) {
+  async checkProductsForOrder(
+    productId: string,
+    quantity: number,
+  ): Promise<Product | null> {
+    const product = await this.productModel.findOne({
+      _id: productId,
+      stock: { $gte: quantity },
+    });
+    if (!product) {
       throw new NotFoundException(`product with id ${productId} not found`);
     }
     return product;
   }
 
-async  updateProductForOrder (productId : string , quantity : number):Promise<void> {
+  async updateProductForOrder(
+    productId: string,
+    quantity: number,
+  ): Promise<void> {
     // await this.productModel.updateOne(
 
-       await this.productModel.updateOne(
-        { _id: productId },
-        { $inc: { stock: -quantity, sold: quantity } },
-      );
+    await this.productModel.updateOne(
+      { _id: productId },
+      { $inc: { stock: -quantity, sold: quantity } },
+    );
     //     { _id: item.productId },
     //     { $inc: { countInStock: -item.quantity, sales: item.quantity } },
     //   );
+  }
 
+  async updateProductrating(productId: string, reviewsNumber: number , rating:number) {
+const product = await this.findOne(productId);
+product.reviewsNumber = reviewsNumber;
+product.rating = rating;
+await product.save();
+return product;
   }
 }

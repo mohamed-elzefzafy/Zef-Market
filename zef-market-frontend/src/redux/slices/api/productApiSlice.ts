@@ -23,7 +23,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
           : [{ type: "Product", _id: "LIST" }],
     }),
 
-       getOneProduct: builder.query<IProduct, string | void>({
+    getOneProduct: builder.query<IProduct, string | void>({
       query: (_id) => ({
         url: `/api/v1/products/${_id}`,
         headers: {
@@ -34,6 +34,73 @@ export const productApiSlice = apiSlice.injectEndpoints({
       providesTags: ["Product"],
     }),
 
+    getRelatedProduct: builder.query<IProduct[], string | void>({
+      query: (_id) => ({
+        url: `/api/v1/products/related-product/${_id}`,
+        headers: {
+          "Cache-Control": "no-store", // Prevent caching
+        },
+      }),
+      keepUnusedDataFor: 5,
+      providesTags: ["Product"],
+    }),
+
+    getAdminDashboardProducts: builder.query<
+      IProductResponse,
+      { page?: number; limit?: number }
+    >({
+      query: ({ page = 1, limit = 10 }) => ({
+        url: `/api/v1/products?page=${page}&limit=${limit}`,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }),
+      keepUnusedDataFor: 1,
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.products.map(({ _id }) => ({
+                type: "Product" as const,
+                _id,
+              })),
+              { type: "Product", _id: "LIST" },
+            ]
+          : [{ type: "Product", _id: "LIST" }],
+    }),
+
+    deleteProductAdminInstructorPage: builder.mutation<
+      void,
+      { _id: string; page?: number }
+    >({
+      query: ({ _id }) => ({
+        url: `/api/v1/course/${_id}`,
+        method: "DELETE",
+      }),
+      async onQueryStarted({ _id, page }, { dispatch, queryFulfilled }) {
+        const queryParams = `?page=${page}`;
+        const patchResult = dispatch(
+          productApiSlice.util.updateQueryData(
+            "getProducts",
+            queryParams,
+            (draft: IProductResponse) => {
+              draft.products = draft.products.filter(
+                (product) => product._id !== _id
+              );
+              draft.pagination.total -= 1;
+              if (draft.products.length === 0 && page && page > 1) {
+                draft.pagination.page = page - 1;
+              }
+            }
+          )
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
+      invalidatesTags: (result, error, { _id }) => [{ type: "Product", _id }],
+    }),
 
     //   getProducts: builder.query<IProductResponse, string | void>({
     //   query: (queries = "") => ({
@@ -54,7 +121,6 @@ export const productApiSlice = apiSlice.injectEndpoints({
     //         ]
     //       : [{ type: "Product", _id: "LIST" }],
     // }),
-
 
     // getInstructorCourses: builder.query<ICourseResponse, number | void>({
     //   query: (page) => ({
@@ -121,7 +187,6 @@ export const productApiSlice = apiSlice.injectEndpoints({
     //         ]
     //       : [{ type: "Course", _id: "LIST" }],
     // }),
-
 
     // deleteCourseHomePage: builder.mutation<
     //   void,
@@ -312,4 +377,10 @@ export const productApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const {useGetProductsQuery,useGetOneProductQuery} = productApiSlice;
+export const {
+  useGetProductsQuery,
+  useGetOneProductQuery,
+  useGetRelatedProductQuery,
+  useGetAdminDashboardProductsQuery,
+  useDeleteProductAdminInstructorPageMutation,
+} = productApiSlice;

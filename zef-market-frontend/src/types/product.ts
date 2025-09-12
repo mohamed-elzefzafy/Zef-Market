@@ -30,10 +30,10 @@ export interface IProductResponse {
   products: IProduct[];
   pagination: Pagination;
 }
-// export interface IWishlistResponse {
-//   wishlist: IProduct[];
-//   pagination: Pagination;
-// }
+export interface IWishlistResponse {
+  wishlist: IProduct[];
+  pagination: Pagination;
+}
 
 export interface Pagination {
   total: number;

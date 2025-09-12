@@ -164,14 +164,6 @@
 //   );
 // }
 
-
-
-
-
-
-
-
-
 "use client";
 
 import {
@@ -192,13 +184,18 @@ import Image from "next/image";
 import {
   useGetCurrentUserCartQuery,
   useApplyCouponToCartMutation,
+  useDeleteItemFromCartMutation,
+  useIncreaseCartproductQuantityMutation,
+  useDecreaseCartproductQuantityMutation,
 } from "@/redux/slices/api/cartApiSlice";
 import Loading from "@/app/loading";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
 import CheckoutSteps from "./_components/CheckoutSteps";
+import { useAppDispatch } from "@/redux/hooks";
+import { setCartItemsLength } from "@/redux/slices/cartSlice";
 
 interface CouponForm {
   couponName: string;
@@ -206,16 +203,32 @@ interface CouponForm {
 
 export default function CartPage() {
   const router = useRouter();
-  const { data: cart, isLoading, isError } = useGetCurrentUserCartQuery();
-  const [applyCouponToCart, { isLoading: applying }] = useApplyCouponToCartMutation();
+  const dispatch = useAppDispatch();
+  const {
+    data: cart,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetCurrentUserCartQuery();
+  const [deleteItemFromCart] = useDeleteItemFromCartMutation();
+  const [increaseCartproductQuantity] =
+    useIncreaseCartproductQuantityMutation();
+  const [decreaseCartproductQuantity] =
+    useDecreaseCartproductQuantityMutation();
+  console.log("cart", cart);
+  console.log("cart?.cartItems.length", cart?.cartItems.length);
+  const [applyCouponToCart, { isLoading: applying }] =
+    useApplyCouponToCartMutation();
 
+  useEffect(() => {
+    dispatch(setCartItemsLength(cart?.cartItems.length || 0));
+  }, [cart?.cartItems, dispatch]);
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
   } = useForm<CouponForm>();
-
 
   if (isLoading) return <Loading />;
   if (isError || !cart) return <Typography>Error loading cart</Typography>;
@@ -236,8 +249,60 @@ export default function CartPage() {
       ? cart.totalPrice - cart.totalPriceAfterDiscount
       : 0;
 
+  const removeFromCartHandler = async (productId: string) => {
+    if (!productId) {
+      return;
+    }
+    try {
+      const res = await deleteItemFromCart({
+        productId: productId,
+      }).unwrap();
+      refetch();
+      dispatch(setCartItemsLength(res?.cartItems?.length));
+    } catch (error) {
+      const errorMessage = (error as { data?: { message?: string } }).data
+        ?.message;
+      toast.error(errorMessage as string);
+    }
+  };
+
+  const changeQuantityCartHandler = async (
+    productId: string,
+    changeStatu: string
+  ) => {
+    if (!productId) {
+      return;
+    }
+    if (changeStatu === "increase") {
+      try {
+        const res = await increaseCartproductQuantity({
+          productId: productId,
+        }).unwrap();
+        refetch();
+        router.refresh();
+        dispatch(setCartItemsLength(res?.cartItems?.length));
+      } catch (error) {
+        const errorMessage = (error as { data?: { message?: string } }).data
+          ?.message;
+        toast.error(errorMessage as string);
+      }
+    } else if (changeStatu === "decrease") {
+      try {
+        const res = await decreaseCartproductQuantity({
+          productId: productId,
+        }).unwrap();
+        refetch();
+        dispatch(setCartItemsLength(res?.cartItems?.length));
+      } catch (error) {
+        const errorMessage = (error as { data?: { message?: string } }).data
+          ?.message;
+        toast.error(errorMessage as string);
+      }
+    }
+  };
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 6,pt:2 }}>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 6, pt: 2 }}>
       <Typography
         variant="h4"
         fontWeight="bold"
@@ -267,7 +332,9 @@ export default function CartPage() {
                 position: "relative",
                 width: { xs: "100%", sm: 180 },
                 height: { xs: 200, sm: 180 },
+                cursor: "pointer",
               }}
+              onClick={() => router.push(`/products/${item?.productId?._id}`)}
             >
               <Image
                 src={item?.productId?.images?.[0]?.url || "/no-image.png"}
@@ -306,16 +373,37 @@ export default function CartPage() {
                 </Typography>
 
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <IconButton size="small" color="primary">
+                  <IconButton
+                    size="small"
+                    color="primary"
+                    onClick={() =>
+                      changeQuantityCartHandler(
+                        item?.productId?._id,
+                        "decrease"
+                      )
+                    }
+                  >
                     <Remove />
                   </IconButton>
                   <Typography>{item.quantity}</Typography>
-                  <IconButton size="small" color="primary">
+                  <IconButton
+                    size="small"
+                    color="primary"
+                    onClick={() =>
+                      changeQuantityCartHandler(
+                        item?.productId?._id,
+                        "increase"
+                      )
+                    }
+                  >
                     <Add />
                   </IconButton>
                 </Stack>
 
-                <IconButton color="error">
+                <IconButton
+                  color="error"
+                  onClick={() => removeFromCartHandler(item?.productId?._id)}
+                >
                   <Delete />
                 </IconButton>
               </Stack>
@@ -379,11 +467,7 @@ export default function CartPage() {
             Order Summary
           </Typography>
 
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            sx={{ my: 2 }}
-          >
+          <Stack direction="row" justifyContent="space-between" sx={{ my: 2 }}>
             <Typography>Total:</Typography>
             <Typography fontWeight="600">${cart.totalPrice}</Typography>
           </Stack>
@@ -429,5 +513,3 @@ export default function CartPage() {
     </Container>
   );
 }
-
-

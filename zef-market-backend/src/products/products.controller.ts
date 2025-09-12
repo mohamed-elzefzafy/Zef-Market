@@ -31,7 +31,7 @@ export class ProductsController {
   @Post()
   @Roles([UserRoles.ADMIN])
   @UseGuards(AuthGuard)
-  @UseInterceptors(FilesInterceptor('images', 3, multerOptions))
+  @UseInterceptors(FilesInterceptor('images', 4, multerOptions))
   create(
     @Body() createProductDto: CreateProductDto,
     @UploadedFiles() files: Express.Multer.File[],
@@ -86,6 +86,10 @@ findAll(
   );
 }
 
+  @Get('related-product/:id')
+  findRelatedProduct(@Param('id', ParseObjectIdPipe) id: string) {
+    return this.productsService.findRelatedProduct(id);
+  }
   @Get(':id')
   findOne(@Param('id', ParseObjectIdPipe) id: string) {
     return this.productsService.findOne(id);

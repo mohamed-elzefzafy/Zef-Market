@@ -5,6 +5,7 @@ import storage from "redux-persist/lib/storage";
 import { combineReducers } from "redux";
 import auth from "./slices/authSlice";
 import search from "./slices/searchSlice";
+import cart from "./slices/cartSlice";
 import {
   FLUSH,
   REHYDRATE,
@@ -17,14 +18,14 @@ import {
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["auth"],
+  whitelist: ["auth" , "cart"],
 };
 
 const rootReducer = combineReducers({
   [apiSlice.reducerPath]: apiSlice.reducer,
     search,
     auth,
-  //   cart,
+    cart,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

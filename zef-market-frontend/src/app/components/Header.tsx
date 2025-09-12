@@ -18,17 +18,29 @@ import { common } from "@mui/material/colors";
 import { useLogoutMutation } from "@/redux/slices/api/authApiSlice";
 import { logoutAction, setCredentials } from "@/redux/slices/authSlice";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { styled } from '@mui/material/styles';
 import Badge, { BadgeProps } from '@mui/material/Badge';
 import { ShoppingCart } from "@mui/icons-material";
+import { useGetCurrentUserCartQuery } from "@/redux/slices/api/cartApiSlice";
+import { setCartItemsLength } from "@/redux/slices/cartSlice";
 
 function Header() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [logout] = useLogoutMutation();
+    const {data: cart} = useGetCurrentUserCartQuery();
+
+      useEffect(() => {
+    dispatch(setCartItemsLength(cart?.cartItems.length || 0));
+  }, [cart?.cartItems, dispatch]);
+
   const { userInfo } = useAppSelector((state) => state?.auth);
+  const {cartItemsLength} = useAppSelector(state => state.cart);
+
+  // console.log(cartItemLength , "cartItemLength");
+  
 
 
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
@@ -138,7 +150,7 @@ function Header() {
                     {(userInfo.email && userInfo.role === "user" )  &&
               <IconButton  aria-label="cart" sx={{mr : {xs : 2 , md : 1}}}
                onClick={()=> router.push("/cart")} >
-              <StyledBadge badgeContent={Number(5)} color="secondary">
+              <StyledBadge badgeContent={Number(cartItemsLength)} color="secondary">
                 <ShoppingCart sx={{color : "white" , fontSize : "18px" }}/>
               </StyledBadge>
             </IconButton>
@@ -266,7 +278,7 @@ function Header() {
                   <MenuItem
                     onClick={handleCloseUserMenu}
                     disabled={!userInfo.isAccountVerified}
-                    href={`/profile/${userInfo?._id}`}
+                    href={`/profile`}
                     component={Link}
                   >
                     <Typography

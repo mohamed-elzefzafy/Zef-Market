@@ -43,9 +43,14 @@ export class ReviewsService {
     for (let i = 0; i < productReviews.length; i++) {
       productRating += productReviews[i].rating;
     }
+
     product.rating = productRating / productReviews.length;
     product.reviewsNumber = productReviews.length;
-    await product.save();
+    await this.productsService.updateProductrating(
+      createReviewDto.product,
+      product.reviewsNumber,
+      product.rating,
+    );
     return review;
   }
 
@@ -117,7 +122,20 @@ export class ReviewsService {
       );
     }
     Object.assign(review, updateReviewDto);
+    await review.save();
     const product = await this.productsService.findOne(review.product);
+    // const productReviews = await this.reviewModel.find({
+    //   product: product._id,
+    // });
+    // let productRating = 0;
+
+    // for (let i = 0; i < productReviews.length; i++) {
+    //   productRating += productReviews[i].rating;
+    // }
+    // product.rating = productRating / productReviews.length;
+    // product.reviewsNumber = productReviews.length;
+    // await product.save();
+
     const productReviews = await this.reviewModel.find({
       product: product._id,
     });
@@ -126,9 +144,14 @@ export class ReviewsService {
     for (let i = 0; i < productReviews.length; i++) {
       productRating += productReviews[i].rating;
     }
+
     product.rating = productRating / productReviews.length;
     product.reviewsNumber = productReviews.length;
-    await product.save();
+    await this.productsService.updateProductrating(
+      product._id.toString(),
+      product.reviewsNumber,
+      product.rating,
+    );
     await review.save();
     return review;
   }
@@ -148,7 +171,7 @@ export class ReviewsService {
   //   const reviewObj = review;
 
   //     await review.deleteOne();
-      
+
   //   const product = await this.productsService.findOne(reviewObj.product);
 
   //   const productReviews = await this.reviewModel.find({
@@ -162,49 +185,48 @@ export class ReviewsService {
   //   product.rating = productRating / productReviews.length;
   //   product.reviewsNumber = productReviews.length;
   //   await product.save();
-    
 
   //   return { message: `Review with id (${id}) has removed` };
   // }
 
   async remove(id: string, user: JwtPayloadType) {
-  const review = await this.reviewModel.findById(id);
+    const review = await this.reviewModel.findById(id);
 
-  if (!review) {
-    throw new NotFoundException(`There's no review with this id: ${id}`);
+    if (!review) {
+      throw new NotFoundException(`There's no review with this id: ${id}`);
+    }
+
+    if (review.user.toString() !== user.id.toString()) {
+      throw new UnauthorizedException(
+        'You are not allowed to access this route',
+      );
+    }
+
+    const productId = review.product;
+    await review.deleteOne();
+    const product = await this.productsService.findOne(productId);
+
+    if (!product) {
+      throw new NotFoundException(`Product not found for review: ${id}`);
+    }
+
+    const productReviews = await this.reviewModel.find({
+      product: product._id,
+    });
+
+    if (productReviews.length > 0) {
+      const totalRating = productReviews.reduce((sum, r) => sum + r.rating, 0);
+      product.rating = totalRating / productReviews.length;
+    } else {
+      product.rating = 0;
+    }
+
+    product.reviewsNumber = productReviews.length;
+
+    await product.save();
+
+    return { message: `Review with id (${id}) has been removed` };
   }
-
-  if (review.user.toString() !== user.id.toString()) {
-    throw new UnauthorizedException('You are not allowed to access this route');
-  }
-
-  const productId = review.product;
-  await review.deleteOne();
-  const product = await this.productsService.findOne(productId);
-
-  if (!product) {
-    throw new NotFoundException(`Product not found for review: ${id}`);
-  }
-
-  const productReviews = await this.reviewModel.find({ product: product._id });
-
-  if (productReviews.length > 0) {
-    const totalRating = productReviews.reduce(
-      (sum, r) => sum + r.rating,
-      0,
-    );
-    product.rating = totalRating / productReviews.length;
-  } else {
-    product.rating = 0; 
-  }
-
-  product.reviewsNumber = productReviews.length;
-
-  await product.save();
-
-  return { message: `Review with id (${id}) has been removed` };
-}
-
 
   // async removeAdmin(id: string) {
   //   const review = await this.findOne(id);
@@ -235,42 +257,41 @@ export class ReviewsService {
   // }
 
   async removeAdmin(id: string) {
+    const review = await this.findOne(id);
 
-  const review = await this.findOne(id);
+    const product = await this.productsService.findOne(review.product);
+    if (!product) {
+      throw new NotFoundException(
+        `Product with id ${review.product} not found`,
+      );
+    }
 
-  const product = await this.productsService.findOne(review.product);
-  if (!product) {
-    throw new NotFoundException(`Product with id ${review.product} not found`);
+    await review.deleteOne();
+
+    // هات الريفيوز المتبقية للبرودكت
+    const productReviews = await this.reviewModel.find({
+      product: product._id,
+    });
+
+    // لو فيه ريفيوهات احسب الريتنغ وعددهم
+    if (productReviews.length > 0) {
+      const totalRating = productReviews.reduce(
+        (acc, curr) => acc + curr.rating,
+        0,
+      );
+      product.rating = totalRating / productReviews.length;
+      product.reviewsNumber = productReviews.length;
+    } else {
+      // مفيش أي ريفيوهات دلوقتي
+      product.rating = 0;
+      product.reviewsNumber = 0;
+    }
+
+    // احفظ التغييرات
+    await product.save();
+
+    return { message: `Review with id (${id}) has been removed` };
   }
-
-
-  await review.deleteOne();
-
-  // هات الريفيوز المتبقية للبرودكت
-  const productReviews = await this.reviewModel.find({
-    product: product._id,
-  });
-
-  // لو فيه ريفيوهات احسب الريتنغ وعددهم
-  if (productReviews.length > 0) {
-    const totalRating = productReviews.reduce(
-      (acc, curr) => acc + curr.rating,
-      0,
-    );
-    product.rating = totalRating / productReviews.length;
-    product.reviewsNumber = productReviews.length;
-  } else {
-    // مفيش أي ريفيوهات دلوقتي
-    product.rating = 0;
-    product.reviewsNumber = 0;
-  }
-
-  // احفظ التغييرات
-  await product.save();
-
-  return { message: `Review with id (${id}) has been removed` };
-}
-
 
   getAdminReviewCount() {
     return this.reviewModel.countDocuments();
