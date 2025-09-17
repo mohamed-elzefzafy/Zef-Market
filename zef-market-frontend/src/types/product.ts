@@ -23,6 +23,20 @@ export interface IProduct {
   updatedAt: string;
 }
 
+export interface IProductInput {
+  title: string;
+  // images: CloudinaryObject[];
+  category: string,
+  subCategory :string,
+  brand :string,
+  description: string;
+  price: number;
+  discount: number;
+  stock: number;
+}
+
+
+
 
 
 

@@ -167,8 +167,8 @@ export default function ProductDetailsPage() {
     }
     try {
       await updateReview({
-        id: reviewId,
-        body: { comment, rating },
+        reviewId,
+        payLoad: { comment, rating },
       }).unwrap();
       toast.success("Review updated successfully");
       refetch();
@@ -513,11 +513,11 @@ export default function ProductDetailsPage() {
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Avatar
-                    alt={review.user.firstName}
-                    src={review.user.profileImage.url}
+                    alt={review?.user?.firstName}
+                    src={review?.user?.profileImage.url}
                   />
                   <Chip
-                    label={review.user.firstName + " " + review.user.lastName}
+                    label={review?.user?.firstName + " " + review?.user?.lastName}
                     size="medium"
                     color="warning"
                     sx={{ fontWeight: "bold" }}

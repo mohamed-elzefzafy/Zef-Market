@@ -11,6 +11,9 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './entities/user.schema';
 import { Model } from 'mongoose';
+import { ReviewsService } from 'src/reviews/reviews.service';
+import { ProductsService } from 'src/products/products.service';
+import { UpdateProductDto } from 'src/products/dto/update-product.dto';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +21,10 @@ export class UsersService {
     @InjectModel(User.name)
     private readonly userModel: Model<User>,
     private readonly cloudinaryService: CloudinaryService,
+    @Inject(forwardRef(() => ReviewsService))
+    private readonly reviewsService: ReviewsService,
+      @Inject(forwardRef(() => ProductsService))
+    private readonly productsService: ProductsService,
   ) {}
 
   // public async findAll() {
@@ -96,15 +103,51 @@ export class UsersService {
     return user;
   }
 
-  public async remove(id: string) {
-    const user = await this.findOne(id);
-    if (user.profileImage.public_id !== null) {
-      await this.cloudinaryService.removeImage(user.profileImage.public_id);
-    }
+  // public async remove(id: string) {
+  //   const user = await this.findOne(id);
+  //   if (user.profileImage.public_id !== null) {
+  //     await this.cloudinaryService.removeImage(user.profileImage.public_id);
+  //   }
 
-    await user.deleteOne();
-    return { message: `User with id (${id}) was removed` };
+
+  //   await this.reviewsService.deleteUserReviews(user._id.toString());
+  //   const reviews = await this.reviewsService.getuserReviews(id);
+  //   const reviewsArr = reviews;
+
+  //   for (let i = 0; i < reviewsArr.length; i++) {
+  //   const review = await this.reviewsService.findOne(reviewsArr[i]._id.toString());
+  //     await review.deleteOne();
+  //     await this.reviewsService.countProductReviewAndRating(reviewsArr[i].product.toString());
+  //   }
+
+  //   await user.deleteOne();
+  //   return { message: `User with id (${id}) was removed` };
+  // }
+
+  public async remove(id: string) {
+  const user = await this.findOne(id);
+
+  // لو عنده صورة امسحها
+  if (user.profileImage.public_id !== null) {
+    await this.cloudinaryService.removeImage(user.profileImage.public_id);
   }
+
+  // هات الـ reviews بتاعة اليوزر قبل ما تمسحها
+  const reviewsArr = await this.reviewsService.getuserReviews(id);
+
+  // امشي عليهم واحد واحد، امسحهم، وحدث بيانات المنتج
+  for (let i = 0; i < reviewsArr.length; i++) {
+    const review = await this.reviewsService.findOne(reviewsArr[i]._id.toString());
+    await review.deleteOne();
+    await this.reviewsService.countProductReviewAndRating(reviewsArr[i].product.toString());
+  }
+
+  // في الآخر امسح اليوزر
+  await user.deleteOne();
+
+  return { message: `User with id (${id}) was removed` };
+}
+
 
   async getUsersCount() {
     return this.userModel.countDocuments().exec();

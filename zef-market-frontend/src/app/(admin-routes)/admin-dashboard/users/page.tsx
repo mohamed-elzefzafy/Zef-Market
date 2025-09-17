@@ -42,26 +42,26 @@ const AdminUsersPage = () => {
       minWidth: isSmallScreen ? 120 : 150,
       align: "center",
       headerAlign: "center",
-      renderCell: (params: GridRenderCellParams) => (
-        <Box
-          sx={{
-            whiteSpace: "normal",
-            wordWrap: "break-word",
-            lineHeight: 1.2,
-            padding: "4px",
-          }}
-        >
-          <Link
-            href={`/profile/${params.row.userId}?fromAdminDashBoard=fromAdminDashBoard`}
-            style={{
-              color: theme.palette.primary.main,
-              textDecoration: "none",
-            }}
-          >
-            {params.value}
-          </Link>
-        </Box>
-      ),
+      // renderCell: (params: GridRenderCellParams) => (
+      //   <Box
+      //     sx={{
+      //       whiteSpace: "normal",
+      //       wordWrap: "break-word",
+      //       lineHeight: 1.2,
+      //       padding: "4px",
+      //     }}
+      //   >
+      //     <Link
+      //       href={`/profile/${params.row.userId}?fromAdminDashBoard=fromAdminDashBoard`}
+      //       style={{
+      //         color: theme.palette.primary.main,
+      //         textDecoration: "none",
+      //       }}
+      //     >
+      //       {params.value}
+      //     </Link>
+      //   </Box>
+      // ),
     },
       {
       field: "profileImage",
@@ -72,12 +72,12 @@ const AdminUsersPage = () => {
       
       renderCell: (params: GridRenderCellParams) => (
         <Image
-        onClick={()=> router.push(`/profile/${params.row.userId}?fromAdminDashBoard=fromAdminDashBoard`)}
+        // onClick={()=> router.push(`/profile/${params.row.userId}?fromAdminDashBoard=fromAdminDashBoard`)}
           src={params.value}
           alt="userProfile"
           width={40}
           height={40}
-          style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "50%", cursor : "pointer" }}
+          style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "50%" }}
         />
       ),
     },

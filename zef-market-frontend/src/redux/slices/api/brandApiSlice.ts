@@ -1,5 +1,5 @@
 import { apiSlice } from "./apiSlice";
-import { IBrandResponse } from "@/types/brand";
+import { IBrand, IBrandResponse } from "@/types/brand";
 
 export const brandApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -9,6 +9,85 @@ export const brandApiSlice = apiSlice.injectEndpoints({
       }),
       keepUnusedDataFor: 5,
       providesTags: ["Brand"],
+    }),
+
+    updateBrand: builder.mutation({
+      query: ({ payLoad, brandId }) => ({
+        url: `/api/v1/brand/${brandId}`,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+        method: "PATCH",
+        body: payLoad,
+      }),
+    }),
+
+    getOneBrand: builder.query<IBrand, string | void>({
+      query: (id) => ({
+        url: `/api/v1/brand/${id}`,
+      }),
+      keepUnusedDataFor: 5,
+      providesTags: ["Brand"],
+    }),
+
+    createBrand: builder.mutation({
+      query: (data) => ({
+        url: `/api/v1/brand`,
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    getBrandsAdmin: builder.query<IBrandResponse, string | void>({
+      query: (queries = "") => ({
+        url: `/api/v1/brand${queries}&_t=${Date.now()}`,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }),
+      keepUnusedDataFor: 1,
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.brands.map(({ _id }) => ({
+                type: "Brand" as const,
+                _id,
+              })),
+              { type: "Brand", id: "LIST" },
+            ]
+          : [{ type: "Brand", id: "LIST" }],
+    }),
+
+    deleteBrandAdminPage: builder.mutation<
+      void,
+      { _id: string; page?: number }
+    >({
+      query: ({ _id }) => ({
+        url: `/api/v1/brand/${_id}`,
+        method: "DELETE",
+      }),
+      async onQueryStarted({ _id, page }, { dispatch, queryFulfilled }) {
+        const queryParams = `?page=${page}`;
+        const patchResult = dispatch(
+          brandApiSlice.util.updateQueryData(
+            "getBrandsAdmin",
+            queryParams,
+            (draft: IBrandResponse) => {
+              draft.brands = draft.brands.filter((brand) => brand._id !== _id);
+              draft.pagination.total -= 1;
+              if (draft.brands.length === 0 && page && page > 1) {
+                draft.pagination.page = page - 1;
+              }
+            }
+          )
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
+      invalidatesTags: (result, error, { _id }) => [{ type: "Brand", _id }],
     }),
 
     // updateCategory: builder.mutation({
@@ -94,4 +173,11 @@ export const brandApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const {useGetBrandsQuery} = brandApiSlice;
+export const {
+  useGetBrandsQuery,
+  useUpdateBrandMutation,
+  useGetOneBrandQuery,
+  useCreateBrandMutation,
+  useGetBrandsAdminQuery,
+  useDeleteBrandAdminPageMutation,
+} = brandApiSlice;

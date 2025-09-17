@@ -15,6 +15,7 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { CategoryService } from 'src/category/category.service';
 import { SubCategoryService } from 'src/subcategory/subcategory.service';
 import { BrandService } from 'src/brand/brand.service';
+import { ReviewsService } from 'src/reviews/reviews.service';
 
 @Injectable()
 export class ProductsService {
@@ -27,6 +28,8 @@ export class ProductsService {
     private readonly subCategoryService: SubCategoryService,
     @Inject(forwardRef(() => BrandService))
     private readonly brandService: BrandService,
+      @Inject(forwardRef(() => ReviewsService))
+    private readonly reviewsService: ReviewsService,
   ) {}
   async create(
     createProductDto: CreateProductDto,
@@ -314,6 +317,8 @@ export class ProductsService {
 
   async remove(id: string) {
     const product = await this.findOne(id);
+
+    await this.reviewsService.deleteProductReviews(product._id.toString());
 
     for (let i = 0; i < product.images.length; i++) {
       await this.cloudinaryService.removeImage(product.images[i].public_id);

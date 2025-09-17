@@ -86,6 +86,7 @@ export class SubCategoryService {
       .sort({ role: 1, createdAt: 1 }) // ASC sorting
       .skip(skip)
       .limit(limitNumber)
+    .populate('category')
       .exec();
 
     const total = await this.subCategoryModel.countDocuments(query).exec();
@@ -106,7 +107,7 @@ export class SubCategoryService {
   }
 
   public async findOne(id: string) {
-    const subCategory = await this.subCategoryModel.findById(id);
+    const subCategory = await this.subCategoryModel.findById(id).populate('category');
     if (!subCategory) throw new NotFoundException('subCategory not found');
     return subCategory;
   }

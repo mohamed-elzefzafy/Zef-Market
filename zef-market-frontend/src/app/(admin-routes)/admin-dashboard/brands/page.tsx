@@ -3,34 +3,41 @@ import { useState } from "react";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   Box,
+  Button,
+  Chip,
   IconButton,
   Stack,
   Typography,
   useMediaQuery,
 } from "@mui/material";
-import { Delete } from "@mui/icons-material";
+import { Delete, Edit } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import toast from "react-hot-toast";
 import swal from "sweetalert";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import {
+  useDeleteCategoryAdminPageMutation,
+  useGetCategoriesAdminQuery,
+  useUpdateCategoryMutation,
+} from "@/redux/slices/api/categoryApiSlice";
 import Link from "next/link";
+import Image from "next/image";
 import PaginationComponent from "@/app/components/PaginationComponent";
 import {
-  useDeleteReviewAdminDashboardPageMutation,
-  useDeleteReviewByAdminMutation,
-  useGetAdminReviewsQuery,
-} from "@/redux/slices/api/reviewApiSlice";
+  useDeleteBrandAdminPageMutation,
+  useGetBrandsAdminQuery,
+  useUpdateBrandMutation,
+} from "@/redux/slices/api/brandApiSlice";
 
-const AdminReviewsPage = () => {
+const AdminBrandsPage = () => {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
-  const { data, isLoading } = useGetAdminReviewsQuery(`?page=${currentPage}`);
-  const [deleteReviewAdminDashboardPage] = useDeleteReviewAdminDashboardPageMutation();
+  const [pageSize, setPageSize] = useState(10);
+  const { data, isLoading } = useGetBrandsAdminQuery(`?page=${currentPage}`);
+  const [deleteBrandAdminPage] = useDeleteBrandAdminPageMutation();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-  const [pageSize, setPageSize] = useState(10);
-  console.log("data66", data);
+  const [updateBrand] = useUpdateBrandMutation();
 
   const columns: GridColDef[] = [
     {
@@ -41,54 +48,10 @@ const AdminReviewsPage = () => {
       headerAlign: "center",
     },
     {
-      field: "comment",
-      headerName: "Comment",
+      field: "name",
+      headerName: "name",
       flex: isSmallScreen ? 0.8 : 1,
       minWidth: isSmallScreen ? 120 : 150,
-      align: "center",
-      headerAlign: "center",
-      // renderCell: (params: GridRenderCellParams) => (
-      //   <Box
-      //     sx={{
-      //       whiteSpace: "normal",
-      //       wordWrap: "break-word",
-      //       lineHeight: 1.2,
-      //       padding: "4px",
-      //       color: "primary.main",
-      //     }}
-      //   >
-      //     <Link
-      //       href={`/course/${params.row.courseId}?fromAdminDashBoardReviews=fromAdminDashBoardReviews`}
-      //       style={{
-      //         color: theme.palette.primary.main,
-      //         textDecoration: "none",
-      //       }}
-      //     >
-      //       {params.value}
-      //     </Link>
-      //   </Box>
-      // ),
-    },
-    {
-      field: "rating",
-      headerName: "Rating",
-      minWidth: isSmallScreen ? 80 : 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "product",
-      headerName: "Product",
-      flex: isSmallScreen ? 0.6 : 0.8,
-      minWidth: isSmallScreen ? 80 : 120,
-      align: "center",
-      headerAlign: "center",
-    },
-    {
-      field: "user",
-      headerName: "User",
-      flex: isSmallScreen ? 0.6 : 0.8,
-      minWidth: isSmallScreen ? 80 : 100,
       align: "center",
       headerAlign: "center",
       renderCell: (params: GridRenderCellParams) => (
@@ -98,38 +61,70 @@ const AdminReviewsPage = () => {
             wordWrap: "break-word",
             lineHeight: 1.2,
             padding: "4px",
-            fontWeight: "bold",
-            color:
-              params.row.role === "admin"
-                ? "error.main"
-                : params.row.role === "instructor"
-                ? "secondary.main"
-                : null,
           }}
         >
-          {params.value}
+          <Link
+            href={`/?CategoryIdfromAdminDashBoard=${params.row.categoryId}`}
+            style={{
+              color: theme.palette.primary.main,
+              textDecoration: "none",
+            }}
+          >
+            {params.value}
+          </Link>
         </Box>
       ),
     },
     {
-      field: "createdAt",
-      headerName: "Since",
-      flex: isSmallScreen ? 0.6 : 0.8,
-      minWidth: isSmallScreen ? 80 : 100,
-      align: "center",
-      headerAlign: "center",
-    },
-
-    {
-      field: "Remove",
-      headerName: "remove",
-      width: isSmallScreen ? 80 : 100,
+      field: "image",
+      headerName: "Image",
+      flex: 1,
       align: "center",
       headerAlign: "center",
       renderCell: (params: GridRenderCellParams) => (
+        <Image
+          // onClick={() =>
+          //   router.push(
+          //     `/profile/${params.row.userId}?fromInstructorDashBoard=fromInstructorDashBoard`
+          //   )
+          // }
+          src={params.value}
+          alt="userProfile"
+          width={40}
+          height={40}
+          style={{
+            width: "40px",
+            height: "40px",
+            objectFit: "cover",
+            borderRadius: "50%",
+            cursor: "pointer",
+          }}
+        />
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: isSmallScreen ? 0.8 : 1,
+      width: isSmallScreen ? 100 : 120,
+      align: "center",
+      headerAlign: "center",
+
+      renderCell: (params: GridRenderCellParams<string[]>) => (
         <>
           <IconButton
-            onClick={() => onDeleteReview({ _id: params.value, page: currentPage })}
+            onClick={() =>
+              router.push(
+                `/admin-dashboard/brands/edit-brand/${params.value}`
+              )
+            }
+          >
+            <Edit color="info" />
+          </IconButton>
+          <IconButton
+            onClick={() =>
+              onDeleteBrand({ _id: params.value, page: currentPage })
+            }
             sx={{ padding: isSmallScreen ? "6px" : "8px" }}
           >
             <Delete
@@ -143,15 +138,13 @@ const AdminReviewsPage = () => {
   ];
 
   const rows =
-    data?.reviews.map((review, index) => ({
+    data?.brands.map((brand, index) => ({
       id: index + 1,
-      comment: review.comment,
-      rating: review.rating,
-      user: review?.user?.firstName + " " + review?.user?.lastName,
-      product: review?.product?.title,
-      createdAt: review.createdAt.substring(0, 10),
-      Remove: review._id,
-      productId: review.product._id,
+      name: brand.title,
+      image: brand.image.url,
+      brandId: brand._id,
+      Remove: brand._id,
+      actions: brand._id,
     })) || [];
 
   const handlePageChange = (
@@ -161,25 +154,31 @@ const AdminReviewsPage = () => {
     setCurrentPage(value);
   };
 
-  const onDeleteReview = async ({ _id, page }: { _id: string; page: number }) => {
+  const onDeleteBrand = async ({
+    _id,
+    page,
+  }: {
+    _id: string;
+    page: number;
+  }) => {
     try {
       const willDelete = await swal({
         title: "Are you sure?",
-        text: "Are you sure that you want to delete this review ?",
+        text: "Are you sure that you want to delete this category? all courses belong it will deleted",
         icon: "warning",
         dangerMode: true,
       });
 
       if (willDelete) {
-        await deleteReviewAdminDashboardPage({ _id, page }).unwrap();
+        await deleteBrandAdminPage({ _id, page }).unwrap();
         router.refresh();
-        toast.success("review deleted successfully");
+        toast.success("category deleted successfully");
       }
     } catch (error) {
-      console.error("Delete review error:", error);
+      console.error("Delete category error:", error);
       const errorMessage =
         (error as { data?: { message?: string } }).data?.message ||
-        "Failed to delete review";
+        "Failed to delete category";
       toast.error(errorMessage);
     }
   };
@@ -202,15 +201,22 @@ const AdminReviewsPage = () => {
           justifyContent: "space-between",
           alignItems: "center",
           mb: 2,
-          px: 1,
+          mr: 7,
         }}
       >
         <Typography
           variant={isSmallScreen ? "h6" : "h5"}
           sx={{ my: 1, fontWeight: "bold" }}
         >
-          Reviews
+          Brands
         </Typography>
+        <Chip
+          label="Add brand"
+          size="small"
+          color="secondary"
+          sx={{ p: 2, cursor: "pointer" }}
+          onClick={() => router.push("/admin-dashboard/brands/add-brand")}
+        />
       </Stack>
       <Box
         sx={{
@@ -273,4 +279,4 @@ const AdminReviewsPage = () => {
   );
 };
 
-export default AdminReviewsPage;
+export default AdminBrandsPage;

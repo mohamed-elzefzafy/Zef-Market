@@ -3,7 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { Product } from 'src/products/entities/product.schema';
 import { User } from 'src/users/entities/user.schema';
 
-export type UserDocument = HydratedDocument<Review>;
+export type ReviewDocument = HydratedDocument<Review>;
 
 @Schema({ timestamps: true })
 export class Review {

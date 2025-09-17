@@ -3,12 +3,14 @@ import { useState } from "react";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   Box,
+  Button,
+  Chip,
   IconButton,
   Stack,
   Typography,
   useMediaQuery,
 } from "@mui/material";
-import { Delete } from "@mui/icons-material";
+import { Delete, Edit } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import toast from "react-hot-toast";
 import swal from "sweetalert";
@@ -16,46 +18,44 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import PaginationComponent from "@/app/components/PaginationComponent";
-import PublishIcon from '@mui/icons-material/Publish';
-import { useDeleteProductAdminInstructorPageMutation, useGetAdminDashboardProductsQuery } from "@/redux/slices/api/productApiSlice";
-
+import {
+  useDeleteProductAdminDashboardMutation,
+  useGetAdminDashboardProductsQuery,
+} from "@/redux/slices/api/productApiSlice";
 
 const InstructorCoursesPage = () => {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10); // Default page size
-  const { data, isLoading ,refetch} = useGetAdminDashboardProductsQuery({
+  const [pageSize, setPageSize] = useState(10);
+  const { data, isLoading, refetch } = useGetAdminDashboardProductsQuery({
     page: currentPage,
     limit: pageSize,
   });
-  const [deleteProductAdminInstructorPage] =
-    useDeleteProductAdminInstructorPageMutation();
+  const [deleteProductAdminDashboard] =
+    useDeleteProductAdminDashboardMutation();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
-  console.log("dataIns", data);
-    const handlePageChange = (
+  const handlePageChange = (
     event: React.ChangeEvent<unknown>,
     value: number
   ) => {
     setCurrentPage(value);
   };
 
-
-
   const columns: GridColDef[] = [
     {
       field: "id",
       headerName: "Serial",
-      width: isSmallScreen ? 60 : 80,
+      width: isSmallScreen ? 50 : 70,
       align: "center",
       headerAlign: "center",
     },
     {
       field: "title",
       headerName: "Title",
-      flex: isSmallScreen ? 0.8 : 1,
-      minWidth: isSmallScreen ? 120 : 150,
+    flex: isSmallScreen ? 0.6 : 0.8,
+      minWidth: isSmallScreen ? 80 : 120,
       align: "center",
       headerAlign: "center",
       renderCell: (params: GridRenderCellParams) => (
@@ -68,7 +68,7 @@ const InstructorCoursesPage = () => {
           }}
         >
           <Link
-            href={`/course/${params.row.courseId}?fromInstructorDashBoard=fromInstructorDashBoard`}
+            href={`/products/${params.row.productId}?fromAdminDashBoard=fromAdminDashBoard`}
             style={{
               color: theme.palette.primary.main,
               textDecoration: "none",
@@ -82,11 +82,10 @@ const InstructorCoursesPage = () => {
     {
       field: "image",
       headerName: "Image",
-      flex: 1,
       align: "center",
       headerAlign: "center",
-        // flex: isSmallScreen ? 0.8 : 1,
-      minWidth: isSmallScreen ? 100 : 120,
+      flex: isSmallScreen ? 0.6 : 0.8,
+      minWidth: isSmallScreen ? 80 : 120,
       renderCell: (params: GridRenderCellParams) => (
         <Image
           onClick={() =>
@@ -124,72 +123,54 @@ const InstructorCoursesPage = () => {
       align: "center",
       headerAlign: "center",
     },
-
-      {
-      field: "instructor",
-      headerName: "Instructor",
-      flex: isSmallScreen ? 0.8 : 0.8,
-      minWidth: isSmallScreen ? 120 : 140,
+    {
+      field: "rating",
+      headerName: "Rating",
+      flex: isSmallScreen ? 0.6 : 0.8,
+      minWidth: isSmallScreen ? 80 : 120,
       align: "center",
       headerAlign: "center",
-          renderCell: (params: GridRenderCellParams) => (
-        <Box
-          sx={{
-            whiteSpace: "normal",
-            wordWrap: "break-word",
-            lineHeight: 1.2,
-            padding: "4px",
-          }}
-        >
-          <Link
-            href={`/profile/${params.row.userId}?fromAdminDashBoard=fromAdminDashBoard`}
-            style={{
-              color: theme.palette.primary.main,
-              textDecoration: "none",
-            }}
-          >
-            {params.value}
-          </Link>
-        </Box>
-      ),
     },
 
     {
-      field: "isFree",
-      headerName: "Free",
+      field: "stock",
+      headerName: "Stock",
       flex: isSmallScreen ? 0.6 : 0.8,
       minWidth: isSmallScreen ? 80 : 120,
       align: "center",
       headerAlign: "center",
     },
-        {
-      field: "isPublished",
-      headerName: "Published",
+    {
+      field: "sold",
+      headerName: "Sold",
       flex: isSmallScreen ? 0.6 : 0.8,
       minWidth: isSmallScreen ? 80 : 120,
       align: "center",
       headerAlign: "center",
     },
 
-      {
-      field: "remove",
-      headerName: "Remove",
-      width: isSmallScreen ? 80 : 100,
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: isSmallScreen ? 1 : 1,
+      width: isSmallScreen ? 120 : 140,
       align: "center",
       headerAlign: "center",
+
       renderCell: (params: GridRenderCellParams) => (
-        <Stack
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            gap: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
+        <>
           <IconButton
             onClick={() =>
-              onDeleteCourse({ _id: params.row.courseId, page: currentPage })
+              router.push(
+                `/admin-dashboard/products/edit-product/${params.row.productId}`
+              )
+            }
+          >
+            <Edit color="info" />
+          </IconButton>
+          <IconButton
+            onClick={() =>
+              onDeleteProduct({ _id: params.row.productId, page: currentPage })
             }
             sx={{ padding: isSmallScreen ? "6px" : "8px" }}
           >
@@ -198,7 +179,7 @@ const InstructorCoursesPage = () => {
               fontSize={isSmallScreen ? "small" : "medium"}
             />
           </IconButton>
-        </Stack>
+        </>
       ),
     },
   ];
@@ -209,12 +190,15 @@ const InstructorCoursesPage = () => {
       title: product.title,
       image: product.images[0].url,
       category: product.category.title,
+      rating: product.rating,
+      stock: product.stock,
+      sold: product.sold,
       finalPrice: product.finalPrice,
       createdAt: product.createdAt.substring(0, 10),
       productId: product._id,
     })) || [];
 
-  const onDeleteCourse = async ({
+  const onDeleteProduct = async ({
     _id,
     page,
   }: {
@@ -224,25 +208,24 @@ const InstructorCoursesPage = () => {
     try {
       const willDelete = await swal({
         title: "Are you sure?",
-        text: "If you delete this course, all lectures, attachments, and subscriptions will be deleted.",
+        text: "you want to delete this product",
         icon: "warning",
         dangerMode: true,
       });
 
       if (willDelete) {
-        await deleteProductAdminInstructorPage({ _id, page }).unwrap();
+        await deleteProductAdminDashboard({ _id, page }).unwrap();
         router.refresh();
-        toast.success("Course deleted successfully");
+        toast.success("Product deleted successfully");
       }
     } catch (error) {
-      console.error("Delete course error:", error);
+      console.error("Delete product error:", error);
       const errorMessage =
         (error as { data?: { message?: string } }).data?.message ||
-        "Failed to delete course";
+        "Failed to delete product";
       toast.error(errorMessage);
     }
   };
-
 
   return (
     <Box
@@ -269,9 +252,27 @@ const InstructorCoursesPage = () => {
           variant={isSmallScreen ? "h6" : "h5"}
           sx={{ my: 1, fontWeight: "bold" }}
         >
-          Courses
+          Products
         </Typography>
 
+        {/* <Button
+          variant="contained"
+          size="small"
+          sx={{ textTransform: "capitalize" ,borderRadius:"30px"}}
+          onClick={() =>
+            router.push("/admin-dashboard/products/add-product")
+          }
+        >
+          Add Product
+        </Button> */}
+
+        <Chip
+          label="Add Product"
+          size="small"
+          color="secondary"
+          sx={{ p: 2, cursor: "pointer" }}
+          onClick={() => router.push("/admin-dashboard/products/add-product")}
+        />
       </Stack>
       <Box
         sx={{
@@ -299,7 +300,7 @@ const InstructorCoursesPage = () => {
             setPageSize(model.pageSize);
           }}
           loading={isLoading}
-              localeText={{
+          localeText={{
             noRowsLabel: "📭 No data to display",
           }}
           sx={{
@@ -322,7 +323,7 @@ const InstructorCoursesPage = () => {
           }}
         />
       </Box>
-            {data?.pagination && data?.pagination.pagesCount > 1 && (
+      {data?.pagination && data?.pagination.pagesCount > 1 && (
         <PaginationComponent
           count={data.pagination.pagesCount}
           currentPage={data.pagination.page}

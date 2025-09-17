@@ -29,7 +29,7 @@ export class Product {
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    default :null,
+    default: null,
     ref: Brand.name,
   })
   brand: string | null;
@@ -50,7 +50,7 @@ export class Product {
   })
   images: { url: string; public_id: string }[];
 
-  @Prop({ type: Number, min: 0, max: 5 })
+  @Prop({ type: Number, min: 0, max: 5, default: 0 })
   rating: number;
 
   @Prop({ type: Number, default: 0 })

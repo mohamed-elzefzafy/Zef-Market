@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -12,15 +14,24 @@ import { Review } from './entities/review.schema';
 import { Model } from 'mongoose';
 import { UserRoles } from 'src/shared/enums/roles.enum';
 import { ProductsService } from 'src/products/products.service';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ReviewsService {
   constructor(
     @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
+    @Inject(forwardRef(() => ProductsService))
     private readonly productsService: ProductsService,
+    @Inject(forwardRef(() => UsersService))
+    private readonly usersService: UsersService,
   ) {}
   async create(createReviewDto: CreateReviewDto, user: JwtPayloadType) {
     const product = await this.productsService.findOne(createReviewDto.product);
+    const existringUser = await this.usersService.findOne(user.id);
+
+    if (!existringUser) {
+      throw new NotFoundException('user not found');
+    }
 
     const userReview = await this.reviewModel.findOne({
       product: product._id,
@@ -33,24 +44,7 @@ export class ReviewsService {
       ...createReviewDto,
       user: user.id,
     });
-
-    product.reviewsNumber += 1;
-    const productReviews = await this.reviewModel.find({
-      product: product._id,
-    });
-    let productRating = 0;
-
-    for (let i = 0; i < productReviews.length; i++) {
-      productRating += productReviews[i].rating;
-    }
-
-    product.rating = productRating / productReviews.length;
-    product.reviewsNumber = productReviews.length;
-    await this.productsService.updateProductrating(
-      createReviewDto.product,
-      product.reviewsNumber,
-      product.rating,
-    );
+    await this.countProductReviewAndRating(createReviewDto.product);
     return review;
   }
 
@@ -73,7 +67,7 @@ export class ReviewsService {
     // Fetch users and total count using Mongoose
     const reviews = await this.reviewModel
       .find()
-      .sort({ course: 1, createdAt: 1 }) // ASC sorting
+      .sort({ productn: 1, createdAt: 1 }) // ASC sorting
       .populate('user')
       .populate('product')
       .skip(skip)
@@ -124,34 +118,7 @@ export class ReviewsService {
     Object.assign(review, updateReviewDto);
     await review.save();
     const product = await this.productsService.findOne(review.product);
-    // const productReviews = await this.reviewModel.find({
-    //   product: product._id,
-    // });
-    // let productRating = 0;
-
-    // for (let i = 0; i < productReviews.length; i++) {
-    //   productRating += productReviews[i].rating;
-    // }
-    // product.rating = productRating / productReviews.length;
-    // product.reviewsNumber = productReviews.length;
-    // await product.save();
-
-    const productReviews = await this.reviewModel.find({
-      product: product._id,
-    });
-    let productRating = 0;
-
-    for (let i = 0; i < productReviews.length; i++) {
-      productRating += productReviews[i].rating;
-    }
-
-    product.rating = productRating / productReviews.length;
-    product.reviewsNumber = productReviews.length;
-    await this.productsService.updateProductrating(
-      product._id.toString(),
-      product.reviewsNumber,
-      product.rating,
-    );
+    await this.countProductReviewAndRating(product._id.toString());
     await review.save();
     return review;
   }
@@ -210,20 +177,8 @@ export class ReviewsService {
       throw new NotFoundException(`Product not found for review: ${id}`);
     }
 
-    const productReviews = await this.reviewModel.find({
-      product: product._id,
-    });
+    await this.countProductReviewAndRating(product._id.toString());
 
-    if (productReviews.length > 0) {
-      const totalRating = productReviews.reduce((sum, r) => sum + r.rating, 0);
-      product.rating = totalRating / productReviews.length;
-    } else {
-      product.rating = 0;
-    }
-
-    product.reviewsNumber = productReviews.length;
-
-    await product.save();
 
     return { message: `Review with id (${id}) has been removed` };
   }
@@ -268,32 +223,75 @@ export class ReviewsService {
 
     await review.deleteOne();
 
-    // هات الريفيوز المتبقية للبرودكت
-    const productReviews = await this.reviewModel.find({
-      product: product._id,
-    });
+    // // هات الريفيوز المتبقية للبرودكت
+    // const productReviews = await this.reviewModel.find({
+    //   product: product._id,
+    // });
 
-    // لو فيه ريفيوهات احسب الريتنغ وعددهم
-    if (productReviews.length > 0) {
-      const totalRating = productReviews.reduce(
-        (acc, curr) => acc + curr.rating,
-        0,
-      );
-      product.rating = totalRating / productReviews.length;
-      product.reviewsNumber = productReviews.length;
-    } else {
-      // مفيش أي ريفيوهات دلوقتي
-      product.rating = 0;
-      product.reviewsNumber = 0;
-    }
+    // // لو فيه ريفيوهات احسب الريتنغ وعددهم
+    // if (productReviews.length > 0) {
+    //   const totalRating = productReviews.reduce(
+    //     (acc, curr) => acc + curr.rating,
+    //     0,
+    //   );
+    //   product.rating = totalRating / productReviews.length;
+    //   product.reviewsNumber = productReviews.length;
+    // } else {
+    //   // مفيش أي ريفيوهات دلوقتي
+    //   product.rating = 0;
+    //   product.reviewsNumber = 0;
+    // }
 
-    // احفظ التغييرات
-    await product.save();
+    // // احفظ التغييرات
+    // await product.save();
+      await this.countProductReviewAndRating(product._id.toString());
 
     return { message: `Review with id (${id}) has been removed` };
   }
 
   getAdminReviewCount() {
     return this.reviewModel.countDocuments();
+  }
+
+  async deleteProductReviews(productId: string): Promise<void> {
+    await this.productsService.findOne(productId);
+    await this.reviewModel.deleteMany({ product: productId });
+  }
+
+  async deleteUserReviews(userId: string): Promise<void> {
+    await this.reviewModel.deleteMany({ user: userId });
+  }
+
+  async countProductReviewAndRating(productId: string) {
+    const product = await this.productsService.findOne(productId);
+    product.reviewsNumber -= 1;
+    const productReviews = await this.reviewModel.find({
+      product: product._id,
+    });
+    if (productReviews.length === 0) {
+        product.rating = 0;
+    product.reviewsNumber = 0;
+    await product.save();
+    return;
+    }
+    let productRating = 0;
+
+    for (let i = 0; i < productReviews.length; i++) {
+      productRating += productReviews[i].rating;
+    }
+
+    product.rating = productRating / productReviews.length;
+    product.reviewsNumber = productReviews.length;
+    await this.productsService.updateProductrating(
+      productId,
+      product.reviewsNumber,
+      product.rating,
+    );
+    await product.save();
+  }
+
+  async getuserReviews(userId: string) {
+    const reviews = await this.reviewModel.find({ user: userId });
+    return reviews;
   }
 }

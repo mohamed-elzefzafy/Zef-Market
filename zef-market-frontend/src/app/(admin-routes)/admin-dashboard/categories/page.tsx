@@ -4,6 +4,7 @@ import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   Box,
   Button,
+  Chip,
   IconButton,
   Stack,
   Typography,
@@ -199,7 +200,7 @@ const AdminCategoriesPage = () => {
         >
           Categories 
         </Typography>
-        <Button
+        {/* <Button
           variant="contained"
           size="small"
           sx={{ textTransform: "capitalize" }}
@@ -208,7 +209,14 @@ const AdminCategoriesPage = () => {
           }
         >
         Add category
-        </Button>
+        </Button> */}
+              <Chip
+                          label="Add category"
+                          size="small"
+                          color="secondary"
+                          sx={{ p: 2, cursor: "pointer" }}
+                          onClick={() => router.push("/admin-dashboard/categories/add-category")}
+                        />
       </Stack>
       <Box
         sx={{

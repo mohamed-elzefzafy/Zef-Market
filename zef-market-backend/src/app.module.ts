@@ -21,6 +21,7 @@ import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
 import { PaypalModule } from './paypal/paypal.module';
 import { PaymobModule } from './paymob/paymob.module';
+import { StripeModule } from './stripe/stripe.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { PaymobModule } from './paymob/paymob.module';
     OrderModule,
     PaypalModule,
     PaymobModule,
+    StripeModule,
   ],
   controllers: [AppController],
   providers: [],

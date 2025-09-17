@@ -8,15 +8,19 @@ import { SubCategoryModule } from 'src/subcategory/subcategory.module';
 import { BrandModule } from 'src/brand/brand.module';
 import { ProductsController } from './products.controller';
 import { ProductsService } from './products.service';
+import { ReviewsModule } from 'src/reviews/reviews.module';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Product.name, schema: ProductSchema }]),
     JwtModule,
     CloudinaryModule,
+    forwardRef(() => ReviewsModule),
     forwardRef(() => BrandModule),
     forwardRef(() => SubCategoryModule),
     forwardRef(() => CategoryModule),
+    forwardRef(() => UsersModule),
   ],
   controllers: [ProductsController],
   providers: [ProductsService],

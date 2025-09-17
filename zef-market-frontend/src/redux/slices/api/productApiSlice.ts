@@ -68,12 +68,12 @@ export const productApiSlice = apiSlice.injectEndpoints({
           : [{ type: "Product", _id: "LIST" }],
     }),
 
-    deleteProductAdminInstructorPage: builder.mutation<
+    deleteProductAdminDashboard: builder.mutation<
       void,
       { _id: string; page?: number }
     >({
       query: ({ _id }) => ({
-        url: `/api/v1/course/${_id}`,
+        url: `/api/v1/products/${_id}`,
         method: "DELETE",
       }),
       async onQueryStarted({ _id, page }, { dispatch, queryFulfilled }) {
@@ -102,6 +102,26 @@ export const productApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: (result, error, { _id }) => [{ type: "Product", _id }],
     }),
 
+
+        createProduct: builder.mutation({
+      query: (formData) => ({
+        url: `/api/v1/products`, 
+        method: "POST",
+        body: formData,
+      }),
+    }),
+
+        updateProduct: builder.mutation({
+      query: ({ payLoad, productId }) => ({
+        url: `/api/v1/products/${productId}`,
+        method: "PATCH",
+        body: payLoad,
+      }),
+    }),
+
+
+
+    
     //   getProducts: builder.query<IProductResponse, string | void>({
     //   query: (queries = "") => ({
     //     url: `/api/v1/products${queries}&_t=${Date.now()}`,
@@ -382,5 +402,7 @@ export const {
   useGetOneProductQuery,
   useGetRelatedProductQuery,
   useGetAdminDashboardProductsQuery,
-  useDeleteProductAdminInstructorPageMutation,
+  useDeleteProductAdminDashboardMutation,
+  useCreateProductMutation,
+  useUpdateProductMutation,
 } = productApiSlice;
