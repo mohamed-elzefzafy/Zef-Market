@@ -69,38 +69,35 @@ export class OrderController {
     @Param('id', ParseObjectIdPipe) id: string,
     @CurrentUser() user: JwtPayloadType,
   ) {
-    return this.orderService.findOne(id,user.id);
+    return this.orderService.findOne(id, user);
   }
 
-
-    @Patch('admin-update-order-to-paid/:id')
+  @Patch('admin-update-order-to-paid/:id')
   @Roles([UserRoles.ADMIN])
   @UseGuards(AuthGuard)
-  updateOrderToPaid(
-    @Param('id', ParseObjectIdPipe) id: string,
-  ) {
-    return this.orderService.updateOrderToPaid(id);
+  toggleOrderToPaidStatue(@Param('id', ParseObjectIdPipe) id: string) {
+    return this.orderService.toggleOrderToPaidStatue(id);
   }
 
-
-      @Patch('admin-update-order-to-deliver/:id')
+  @Patch('admin-update-order-to-deliver/:id')
   @Roles([UserRoles.ADMIN])
   @UseGuards(AuthGuard)
-  updateOrderToDeliverd(
-    @Param('id', ParseObjectIdPipe) id: string,
-  ) {
-    return this.orderService.updateOrderToDeliverd(id);
+  toggleOrderToDeliverdStatue(@Param('id', ParseObjectIdPipe) id: string) {
+    return this.orderService.toggleOrderToDeliverdStatue(id);
   }
 
-// orders.controller.ts
-@Post('paypal/capture/:orderId/:paypalOrderId')
-@UseGuards(AuthGuard)
-async capturePaypal(
-  @Param('orderId') orderId: string,
-  @Param('paypalOrderId') paypalOrderId: string,
-  @CurrentUser() user: JwtPayloadType,
-) {
-  return this.orderService.capturePaypalOrder(orderId, paypalOrderId, user.id);
-}
-
+  // orders.controller.ts
+  @Post('paypal/capture/:orderId/:paypalOrderId')
+  @UseGuards(AuthGuard)
+  async capturePaypal(
+    @Param('orderId') orderId: string,
+    @Param('paypalOrderId') paypalOrderId: string,
+    @CurrentUser() user: JwtPayloadType,
+  ) {
+    return this.orderService.capturePaypalOrder(
+      orderId,
+      paypalOrderId,
+      user.id,
+    );
+  }
 }

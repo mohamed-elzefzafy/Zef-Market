@@ -1,15 +1,18 @@
-import { IProduct } from "./product";
+import { CloudinaryObject, IUserInfo } from "./auth";
+import { IProduct, Pagination } from "./product";
 
 export interface IOrderItem {
   productId: IProduct;
   quantity: number;
   price: number;
   finalPrice: number;
+  productOrderImage: CloudinaryObject;
+  productOrderTitle: string;
 }
 
 export interface IOrder {
   _id: string;
-  user: string;
+  user: IUserInfo;
   orderItems: IOrderItem[];
   taxPrice: number;
   shippingPrice: number;
@@ -18,10 +21,17 @@ export interface IOrder {
   discount: number;
   tax: number;
   shipping: number;
-  paymentMethodType: "cash" | "card"; // ممكن تزود قيم تانية لو عندك
+  paymentMethodType: "cash" | "stripe" | "paypal" | "paymob";
   isPaid: boolean;
   isDelivered: boolean;
+  deliveredAt?: Date | string;
+  paidAt?: Date | string;
   createdAt: string; // ISO Date string
   updatedAt: string; // ISO Date string
   __v: number;
+}
+
+export interface IOrderResponse {
+  orders: IOrder[];
+  pagination: Pagination;
 }

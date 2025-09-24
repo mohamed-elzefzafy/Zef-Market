@@ -85,4 +85,8 @@ export class BannerService {
 
     return { message: `banner with id (${id}) was removed` };
   }
+
+      getAdminBannersCount() {
+    return this.bannerModel.countDocuments();
+  }
 }

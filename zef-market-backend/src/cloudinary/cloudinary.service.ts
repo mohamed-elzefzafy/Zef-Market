@@ -95,4 +95,16 @@ export class CloudinaryService {
       );
     }
   }
+
+
+    async uploadImageFromUrl(imageUrl: string, folder: string) {
+    try {
+      const result = await cloudinaryV2.uploader.upload(imageUrl, {
+         folder: `Zef-Market/${folder}`,
+      });
+      return result; // { secure_url, public_id, ... }
+    } catch (error) {
+      throw new Error('Cloudinary upload from URL failed: ' + error.message);
+    }
+  }
 }

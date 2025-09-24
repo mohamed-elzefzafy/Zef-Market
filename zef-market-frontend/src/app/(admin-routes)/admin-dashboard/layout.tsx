@@ -1,13 +1,18 @@
 "use client";
 import { ReactNode } from "react";
 import {
+  BrandingWatermark,
   Category,
+  CurrencyExchange,
   Dashboard,
   Group,
   LocalLibrary,
   Note,
+  PermMedia,
+  Receipt,
   Reviews,
   School,
+  TabletMac,
 } from "@mui/icons-material";
 import { Box } from "@mui/material";
 import DrawerComponent from "./_components/DrawerComponent";
@@ -15,7 +20,7 @@ import DrawerComponent from "./_components/DrawerComponent";
 const InstructorDashboardLayout = ({ children }: { children: ReactNode }) => {
   const InstructorDashboardArrayList = [
     { text: "Dashboard", icon: <Dashboard />, path: "/admin-dashboard" },
-    { text: "Products", icon: <School />, path: "/admin-dashboard/products" },
+    { text: "Products", icon: <TabletMac/>, path: "/admin-dashboard/products" },
     {
       text: "Categories",
       icon: <Category />,
@@ -26,13 +31,23 @@ const InstructorDashboardLayout = ({ children }: { children: ReactNode }) => {
       icon: <Category />,
       path: "/admin-dashboard/subcategories",
     },
-    { text: "Brands", icon: <Category />, path: "/admin-dashboard/brands" },
+    { text: "Brands", icon: <BrandingWatermark/>, path: "/admin-dashboard/brands" },
     { text: "Users", icon: <Group />, path: "/admin-dashboard/users" },
     { text: "Reviews", icon: <Reviews />, path: "/admin-dashboard/reviews" },
     {
-      text: "Instructor request",
-      icon: <Note />,
-      path: "/admin-dashboard/instructor-request",
+      text: "orders",
+      icon: <Receipt/>,
+      path: "/admin-dashboard/orders",
+    },
+    {
+      text: "banners",
+      icon:<PermMedia/>,
+      path: "/admin-dashboard/banners",
+    },
+    {
+      text: "Tax shipping",
+      icon:<CurrencyExchange/>,
+      path: "/admin-dashboard/taxAndSipping",
     },
   ];
 

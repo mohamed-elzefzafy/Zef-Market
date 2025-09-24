@@ -11,6 +11,7 @@ import {
   Divider,
   IconButton,
   TextField,
+  Chip,
 } from "@mui/material";
 import { Delete, Add, Remove } from "@mui/icons-material";
 import Image from "next/image";
@@ -27,7 +28,7 @@ import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 import CheckoutSteps from "./_components/CheckoutSteps";
-import { useAppDispatch } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { setCartItemsLength } from "@/redux/slices/cartSlice";
 
 interface CouponForm {
@@ -37,6 +38,7 @@ interface CouponForm {
 export default function CartPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { userInfo } = useAppSelector((state) => state?.auth);
   const {
     data: cart,
     isLoading,
@@ -64,7 +66,19 @@ export default function CartPage() {
   } = useForm<CouponForm>();
 
   if (isLoading) return <Loading />;
-  if (isError || !cart) return <Typography>Error loading cart</Typography>;
+  if (isError || !cart)
+    return (
+      <Container sx={{ textAlign: "center", pt: 5 }}>
+
+        <Chip
+          label="you haven't cart yet add pro ucts to create cart"
+          size="medium"
+          variant="filled"
+          sx={{fontSize:"24px" ,py:3,px:5}}
+          color="success"
+        />
+      </Container>
+    );
 
   const onApplyCoupon = async (data: CouponForm) => {
     try {
@@ -132,6 +146,24 @@ export default function CartPage() {
         toast.error(errorMessage as string);
       }
     }
+  };
+
+  const handleProceedCheckout = () => {
+    if (
+      !userInfo.address ||
+      !userInfo.country ||
+      !userInfo.city ||
+      !userInfo.phoneNumber
+    ) {
+      toast.error(`got to profile complete your address`);
+      setTimeout(() => {
+        router.push("/profile?from-cart-complete-address=from-cart-complete-address");
+      }, 1000);
+    }else {
+        router.push("/checkout");
+    }
+
+  
   };
 
   return (
@@ -337,7 +369,7 @@ export default function CartPage() {
             size="large"
             fullWidth
             sx={{ borderRadius: 2, mt: 2 }}
-            onClick={() => router.push("/checkout")}
+            onClick={handleProceedCheckout}
           >
             Proceed to Checkout
           </Button>

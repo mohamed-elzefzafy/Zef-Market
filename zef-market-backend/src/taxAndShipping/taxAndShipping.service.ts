@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { TaxAndShipping } from './entities/taxAndShipping.schema';
 import { CreateTaxAndShippingDto } from './dto/create-taxAndShipping.dto';
+import { UpdateTaxAndShippingDto } from './dto/update-taxAndShipping.dto';
 
 @Injectable()
 export class TaxAndShippingService {
@@ -28,6 +29,14 @@ export class TaxAndShippingService {
   public async findAll() {
     const taxAndShipping = await this.taxAndShippingModel.findOne();
     return taxAndShipping;
+  }
+
+    public async update(updateTaxAndShippingDto:UpdateTaxAndShippingDto) {
+    let tax = await this.taxAndShippingModel.findOne();
+    if (!tax) throw new Error('Tax not found');
+  Object.assign(tax,updateTaxAndShippingDto)
+ await tax.save();
+  return tax;
   }
 
   public async remove() {

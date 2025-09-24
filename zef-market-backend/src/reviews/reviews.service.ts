@@ -294,4 +294,8 @@ export class ReviewsService {
     const reviews = await this.reviewModel.find({ user: userId });
     return reviews;
   }
+
+    getAdminReviewsCount() {
+    return this.reviewModel.countDocuments();
+  }
 }

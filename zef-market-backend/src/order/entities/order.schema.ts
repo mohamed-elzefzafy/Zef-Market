@@ -7,7 +7,11 @@ export type OrderDocument = HydratedDocument<Order>;
 
 @Schema({ _id: false })
 export class OrderItem {
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Product.name, required: true })
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Product.name,
+    required: true,
+  })
   productId: mongoose.Types.ObjectId;
 
   @Prop({ type: Number, required: true })
@@ -18,6 +22,15 @@ export class OrderItem {
 
   @Prop({ type: Number })
   finalPrice: number;
+  @Prop({
+    type: { url: String, public_id: String },
+    _id: false,
+    required: false,
+  })
+  productOrderImage?: { url: string; public_id: string } | null;
+
+  @Prop({ type: String, required: true })
+  productOrderTitle: string;
 
   // @Prop({ type: String, default: '' })
   // color?: string;
@@ -26,7 +39,11 @@ export const OrderItemSchema = SchemaFactory.createForClass(OrderItem);
 
 @Schema({ timestamps: true })
 export class Order {
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true })
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: User.name,
+    required: true,
+  })
   user: mongoose.Types.ObjectId;
 
   @Prop({ type: [OrderItemSchema], required: true })
@@ -53,7 +70,11 @@ export class Order {
   @Prop({ type: Number, required: true, default: 0 })
   shipping: number;
 
-  @Prop({ type: String, enum: ['cash', 'stripe' ,'paypal' , 'paymob'], default: 'cash' })
+  @Prop({
+    type: String,
+    enum: ['cash', 'stripe', 'paypal', 'paymob'],
+    default: 'cash',
+  })
   paymentMethodType: string;
 
   @Prop({ type: Boolean, default: false })
@@ -67,22 +88,6 @@ export class Order {
 
   @Prop({ type: Date })
   deliveredAt?: Date | string;
-
-  // @Prop({
-  //   type: {
-  //     street: { type: String, required: true },
-  //     city: { type: String, required: true },
-  //     country: { type: String, required: true },
-  //     postalCode: { type: String },
-  //   },
-  //   required: true,
-  // })
-  // shippingAddress: {
-  //   street: string;
-  //   city: string;
-  //   country: string;
-  //   postalCode?: string;
-  // };
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

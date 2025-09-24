@@ -23,6 +23,27 @@ export const productApiSlice = apiSlice.injectEndpoints({
           : [{ type: "Product", _id: "LIST" }],
     }),
 
+      getBestSellerProducts: builder.query<IProduct[], void>({
+      query: () => ({
+        url: `api/v1/products/best-seller-products`,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }),
+      keepUnusedDataFor: 1,
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ _id }) => ({
+                type: "Product" as const,
+                _id,
+              })),
+              { type: "Product", _id: "LIST" },
+            ]
+          : [{ type: "Product", _id: "LIST" }],
+    }),
+
+
     getOneProduct: builder.query<IProduct, string | void>({
       query: (_id) => ({
         url: `/api/v1/products/${_id}`,
@@ -405,4 +426,5 @@ export const {
   useDeleteProductAdminDashboardMutation,
   useCreateProductMutation,
   useUpdateProductMutation,
+  useGetBestSellerProductsQuery,
 } = productApiSlice;

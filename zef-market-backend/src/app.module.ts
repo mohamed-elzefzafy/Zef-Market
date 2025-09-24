@@ -22,6 +22,7 @@ import { OrderModule } from './order/order.module';
 import { PaypalModule } from './paypal/paypal.module';
 import { PaymobModule } from './paymob/paymob.module';
 import { StripeModule } from './stripe/stripe.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { StripeModule } from './stripe/stripe.module';
         dbName: 'Zef-Market',
       }),
     }),
+    JwtModule,
     CategoryModule,
     UsersModule,
     AuthModule,

@@ -1,24 +1,64 @@
 "use client";
-
 import Loading from "@/app/loading";
-import { useGetOrderByIdQuery } from "@/redux/slices/api/orderApiSlice";
+import {
+  useGetOrderByIdQuery,
+  useToggleOrderToDeliverdStatueMutation,
+  useToggleOrderToPaidStatueMutation,
+} from "@/redux/slices/api/orderApiSlice";
 import { Box, Card, Typography, Chip, Divider, Stack } from "@mui/material";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import CheckoutSteps from "../../cart/_components/CheckoutSteps";
+import { useAppSelector } from "@/redux/hooks";
+import toast from "react-hot-toast";
 
 export default function OrderPage() {
   const { orderId } = useParams(); // /orders/[id]
+  const { userInfo } = useAppSelector((state) => state?.auth);
+  const [toggleOrderToPaidStatue] = useToggleOrderToPaidStatueMutation();
+  const [toggleOrderToDeliverdStatue] =
+    useToggleOrderToDeliverdStatueMutation();
   const {
     data: order,
     isLoading,
     isError,
+    refetch,
   } = useGetOrderByIdQuery(orderId as string);
+  console.log(order);
 
   if (isLoading) return <Loading />;
   if (isError) return <Typography>Failed to load order</Typography>;
   if (!order) return <Typography>No order found</Typography>;
 
+  const handlAdminToggleOrderToPaidStatue = async () => {
+    if (!order) {
+      return;
+    }
+    try {
+      await toggleOrderToPaidStatue(order._id).unwrap();
+      refetch();
+      toast.success("order paid statue updated");
+    } catch (error) {
+      const errorMessage = (error as { data?: { message?: string } }).data
+        ?.message;
+      toast.error(errorMessage as string);
+    }
+  };
+
+  const handlAdminToggleOrderToDeliverStatue = async () => {
+    if (!order) {
+      return;
+    }
+    try {
+      await toggleOrderToDeliverdStatue(order._id).unwrap();
+      refetch();
+      toast.success("order deliver statue updated");
+    } catch (error) {
+      const errorMessage = (error as { data?: { message?: string } }).data
+        ?.message;
+      toast.error(errorMessage as string);
+    }
+  };
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h4" sx={{ mb: 2 }}>
@@ -28,6 +68,23 @@ export default function OrderPage() {
       <CheckoutSteps activeStep={2} />
 
       {/* Order Status */}
+      {userInfo.role === "admin" && (
+        <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+          <Chip
+            label={order.isPaid ? "make It not paid" : "make It paid"}
+            color={"primary"}
+            onClick={handlAdminToggleOrderToPaidStatue}
+          />
+          <Chip
+            label={
+              order.isDelivered ? "make It not delivered" : "make It delivered"
+            }
+            color={"primary"}
+            onClick={handlAdminToggleOrderToDeliverStatue}
+          />
+        </Stack>
+      )}
+
       <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
         <Chip
           label={order.isPaid ? "Paid" : "Not Paid"}

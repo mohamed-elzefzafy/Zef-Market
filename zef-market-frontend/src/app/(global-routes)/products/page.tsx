@@ -65,9 +65,7 @@ const ProductsPage = () => {
     searchParams.get("subCategory") || ""
   );
 
-    const [brand, setBrand] = useState<string>(
-    searchParams.get("brand") || ""
-  );
+  const [brand, setBrand] = useState<string>(searchParams.get("brand") || "");
   // const [brand, setBrand] = useState<string>(searchParams.get("brand") || "");
   const [rating, setRating] = useState<number | "">(
     searchParams.get("rating") ? Number(searchParams.get("rating")) : ""
@@ -92,6 +90,7 @@ const ProductsPage = () => {
     category ? `?category=${category}` : undefined
   );
 
+  const { searchKeyWord } = useAppSelector((state) => state.search);
   // build query string for products
   const productsQueryString = useMemo(() => {
     const params = new URLSearchParams();
@@ -100,20 +99,16 @@ const ProductsPage = () => {
     if (category) params.set("category", category);
     if (subCategory) params.set("subCategory", subCategory);
     if (brand) params.set("brand", brand);
-    if (debouncedKeyword.trim()) params.set("keyword", debouncedKeyword.trim());
+    if (searchKeyWord.trim()) params.set("keyword", searchKeyWord.trim());
     if (rating !== "") params.set("rating", String(rating));
     if (sortByPrice) params.set("sortByPrice", sortByPrice);
     return `?${params.toString()}`;
-  }, [
-    currentPage,
-    category,
-    subCategory,
-    brand,
-    debouncedKeyword,
-    rating,
-    sortByPrice,
-  ]);
+  }, [currentPage, category, subCategory, brand, searchKeyWord, rating, sortByPrice]);
+  console.log(searchKeyWord);
 
+  // const { data, isLoading, refetch } = useGetProductsQuery(
+  //   `?sort=${SortPrice}&page=${currentPage}&category=${category}&subCategory=${subCategory}&keyword=${searchKeyWord}&rating=${rating}`
+  // );
   const { data, isLoading , refetch } = useGetProductsQuery(productsQueryString);
 
   // reset subcategory when category changes
@@ -185,10 +180,15 @@ const ProductsPage = () => {
           alignItems="center"
           justifyContent="center"
           flexWrap="wrap"
-          sx={{ rowGap: 2.5 ,px:1}}
+          sx={{ rowGap: 2.5, px: 1 }}
         >
           {/* Search */}
-          <Box sx={{ flex: { xs: "1 0 100%", md: "1 0 33.33%", lg: "1 0 25%" }, minWidth: 100 }}>
+          <Box
+            sx={{
+              flex: { xs: "1 0 100%", md: "1 0 33.33%", lg: "1 0 25%" },
+              minWidth: 100,
+            }}
+          >
             <FormControl fullWidth>
               <TextField
                 fullWidth
@@ -196,7 +196,7 @@ const ProductsPage = () => {
                 value={keyword}
                 onChange={handleKeywordChange}
                 placeholder="Search..."
-                   slotProps={{
+                slotProps={{
                   input: {
                     startAdornment: (
                       <InputAdornment position="start">
@@ -221,7 +221,17 @@ const ProductsPage = () => {
           </Box>
 
           {/* Category */}
-          <Box sx={{ flex: { xs: "1 0 100%", sm: "1 0 50%", md: "1 0 33.33%", lg: "1 0 20%" }, minWidth: 100 }}>
+          <Box
+            sx={{
+              flex: {
+                xs: "1 0 100%",
+                sm: "1 0 50%",
+                md: "1 0 33.33%",
+                lg: "1 0 20%",
+              },
+              minWidth: 100,
+            }}
+          >
             <FormControl fullWidth>
               <InputLabel>Category</InputLabel>
               <Select
@@ -240,7 +250,17 @@ const ProductsPage = () => {
           </Box>
 
           {/* SubCategory (depends on Category) */}
-          <Box sx={{ flex: { xs: "1 0 100%", sm: "1 0 50%", md: "1 0 33.33%", lg: "1 0 20%" }, minWidth: 100 }}>
+          <Box
+            sx={{
+              flex: {
+                xs: "1 0 100%",
+                sm: "1 0 50%",
+                md: "1 0 33.33%",
+                lg: "1 0 20%",
+              },
+              minWidth: 100,
+            }}
+          >
             <FormControl fullWidth disabled={!category}>
               <InputLabel>SubCategory</InputLabel>
               <Select
@@ -259,7 +279,17 @@ const ProductsPage = () => {
           </Box>
 
           {/* Brand */}
-          <Box sx={{ flex: { xs: "1 0 100%", sm: "1 0 50%", md: "1 0 33.33%", lg: "1 0 20%" }, minWidth: 100 }}>
+          <Box
+            sx={{
+              flex: {
+                xs: "1 0 100%",
+                sm: "1 0 50%",
+                md: "1 0 33.33%",
+                lg: "1 0 20%",
+              },
+              minWidth: 100,
+            }}
+          >
             <FormControl fullWidth>
               <InputLabel>Brand</InputLabel>
               <Select label="Brand" value={brand} onChange={handleChangeBrand}>
@@ -274,7 +304,17 @@ const ProductsPage = () => {
           </Box>
 
           {/* Rating */}
-          <Box sx={{ flex: { xs: "1 0 100%", sm: "1 0 50%", md: "1 0 33.33%", lg: "1 0 16.67%" }, minWidth: 100 }}>
+          <Box
+            sx={{
+              flex: {
+                xs: "1 0 100%",
+                sm: "1 0 50%",
+                md: "1 0 33.33%",
+                lg: "1 0 16.67%",
+              },
+              minWidth: 100,
+            }}
+          >
             <FormControl fullWidth>
               <InputLabel>Rating</InputLabel>
               <Select
@@ -302,7 +342,16 @@ const ProductsPage = () => {
           </Box>
 
           {/* Sort by price */}
-          <Box sx={{ flex: { xs: "1 0 100%", sm: "1 0 50%", md: "1 0 33.33%", lg: "1 0 16.67%" } }}>
+          <Box
+            sx={{
+              flex: {
+                xs: "1 0 100%",
+                sm: "1 0 50%",
+                md: "1 0 33.33%",
+                lg: "1 0 16.67%",
+              },
+            }}
+          >
             <FormControl fullWidth>
               <InputLabel>Price</InputLabel>
               <Select
@@ -403,19 +452,21 @@ const ProductsPage = () => {
       </Stack>
 
       {/* Products stack */}
-      <Stack
-        direction="row"
-        spacing={2}
-        flexWrap="wrap"
-        sx={{ rowGap: 2 }}
-      >
+      <Stack direction="row" spacing={2} flexWrap="wrap" sx={{ rowGap: 2 }}>
         {data?.products?.length ? (
           data.products.map((product) => (
             <Box
               key={product._id}
-              sx={{ flex: { xs: "1 0 100%", sm: "1 0 50%", md: "1 0 33.33%", lg: "1 0 25%" } }}
+              sx={{
+                flex: {
+                  xs: "1 0 100%",
+                  sm: "1 0 50%",
+                  md: "1 0 33.33%",
+                  lg: "1 0 25%",
+                },
+              }}
             >
-              <ProductCard productInfo={product} refetch={refetch}/>
+              <ProductCard productInfo={product} refetch={refetch} />
             </Box>
           ))
         ) : (

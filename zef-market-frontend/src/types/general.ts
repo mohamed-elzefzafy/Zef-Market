@@ -1,18 +1,10 @@
 export interface IGetAdminCounts {
-  coursesCount: number;
-  lecturesCount: number;
-  usersCount: number;
-  commentsCount: number;
-}
-
-export interface IGetInstructorCounts {
-  coursesCount: number;
-  lecturesCount: number;
-}
-export interface IGetAdminCounts {
-  coursesCount: number;
-  usersCount: number;
+  productsCount: number;
   categoriesCount: number;
-  instructorRequestsCount: number;
+  subCategoriesCount: number;
+  brandsCount: number;
+  usersCount: number;
   reviewsCount: number;
+  ordersCount: number;
+  bannersCount: number;
 }

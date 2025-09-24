@@ -12,11 +12,13 @@ import { StripeModule } from 'src/stripe/stripe.module';
 import { UsersModule } from 'src/users/users.module';
 import { PaypalModule } from 'src/paypal/paypal.module';
 import { PaymobModule } from 'src/paymob/paymob.module';
+import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Order.name, schema: OrderSchema }]),
     JwtModule,
+    CloudinaryModule,
     CartModule,
     ProductsModule,
     CouponModule,

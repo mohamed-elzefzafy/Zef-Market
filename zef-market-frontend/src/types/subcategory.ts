@@ -10,7 +10,7 @@ export interface ISubCategoryResponse {
 export interface ISubCategory {
   _id: string;
   title: string;
-    category: ICategory,
+  category: ICategory;
   image: CloudinaryObject;
   createdAt: string;
   updatedAt: string;

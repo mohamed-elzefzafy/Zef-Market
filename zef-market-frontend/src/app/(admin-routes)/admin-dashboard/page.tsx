@@ -1,11 +1,11 @@
 import { Box } from "@mui/material"
-import InstructorDashboardPaper from "./_components/InstructorDashboardPaper";
+import AdminDashboardPaper from "./_components/adminDashboardPaper";
 
 
 const AdminDasboardPage = () => {
   return (
  <Box >
-<InstructorDashboardPaper/>
+<AdminDashboardPaper/>
  </Box>
   )
 }

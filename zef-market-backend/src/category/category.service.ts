@@ -177,4 +177,8 @@ export class CategoryService {
   async getCategoriesCount() {
     return this.categoryModel.countDocuments();
   }
+
+    getAdminCategoriesCount() {
+    return this.categoryModel.countDocuments();
+  }
 }

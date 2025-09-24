@@ -11,6 +11,9 @@ export const cartApiSlice = apiSlice.injectEndpoints({
     addToCart: builder.mutation<ICart, IAddToCart>({
       query: (data) => ({
         url: `/api/v1/cart/add-to-cart`,
+          headers: {
+          "Cache-Control": "no-store",
+        },
         method: "POST",
         body: data,
       }),

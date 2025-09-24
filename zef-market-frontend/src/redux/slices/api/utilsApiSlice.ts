@@ -1,17 +1,11 @@
-import {  IGetAdminCounts, IGetInstructorCounts } from "@/types/general";
+import {  IGetAdminCounts } from "@/types/general";
 import { apiSlice } from "./apiSlice";
 
 export const utilsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getInstructorCounts: builder.query<IGetInstructorCounts, string>({
-      query: (instructorId) => ({
-        url: `/api/v1/app/get-instructor-counts/${instructorId}`,
-      }),
-      keepUnusedDataFor: 5,
-    }),
     getAdminCounts: builder.query<IGetAdminCounts, void>({
       query: () => ({
-        url: `/api/v1/app/get-admin-counts`,
+        url: `/get-admin-counts`,
       }),
       keepUnusedDataFor: 5,
     }),
@@ -80,4 +74,4 @@ export const utilsApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const {useGetInstructorCountsQuery,useGetAdminCountsQuery} = utilsApiSlice;
+export const {useGetAdminCountsQuery} = utilsApiSlice;

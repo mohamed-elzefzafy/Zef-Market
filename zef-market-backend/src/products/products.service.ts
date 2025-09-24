@@ -28,7 +28,7 @@ export class ProductsService {
     private readonly subCategoryService: SubCategoryService,
     @Inject(forwardRef(() => BrandService))
     private readonly brandService: BrandService,
-      @Inject(forwardRef(() => ReviewsService))
+    @Inject(forwardRef(() => ReviewsService))
     private readonly reviewsService: ReviewsService,
   ) {}
   async create(
@@ -98,60 +98,6 @@ export class ProductsService {
     return product;
   }
 
-  // public async findAll(
-  //   page: number,
-  //   limit: number,
-  //   category?: string,
-  //   subCategory?: string,
-  //   brand?: string,
-  //   search?: string,
-  // ) {
-  //   const pageNumber = Math.max(1, page);
-  //   const limitNumber = Math.max(1, limit);
-  //   const skip = (pageNumber - 1) * limitNumber;
-
-  //   // Build filter object
-  //   const filter: any = {};
-
-  //   if (category) filter.category = category;
-  //   if (subCategory) filter.subCategory = subCategory;
-  //   if (brand) filter.brand = brand;
-
-  //   if (search) {
-  //     filter.$or = [
-  //       { title: { $regex: search, $options: 'i' } },
-  //       { description: { $regex: search, $options: 'i' } },
-  //     ];
-  //   }
-
-  //   // Build query
-  //   const query = this.productModel
-  //     .find(filter)
-  //     .populate('category')
-  //     .populate('subCategory')
-  //     .populate('brand');
-
-  //   const products = await query
-  //     .sort({ createdAt: -1 }) // or your custom sorting
-  //     .skip(skip)
-  //     .limit(limitNumber)
-  //     .exec();
-
-  //   const total = await this.productModel.countDocuments(filter).exec();
-
-  //   const pagesCount = Math.ceil(total / limitNumber);
-
-  //   return {
-  //     products,
-  //     pagination: {
-  //       total,
-  //       page: pageNumber,
-  //       limit: limitNumber,
-  //       pagesCount,
-  //     },
-  //   };
-  // }
-
   public async findAll(
     page: number,
     limit: number,
@@ -211,6 +157,14 @@ export class ProductsService {
     };
   }
 
+  async bestSellerProducts() {
+    return this.productModel
+      .find()
+      .sort({ sold: -1 }) // sort descending by sold
+      .limit(10) // get only 16 products
+      .exec();
+  }
+
   async findOne(id: string) {
     const product = await this.productModel
       .findById(id)
@@ -233,13 +187,20 @@ export class ProductsService {
           category: product.category,
           subCategory: product.subCategory,
           brand: product.brand,
-        }).populate('category').populate('subCategory').populate('brand').limit(5);
+        })
+        .populate('category')
+        .populate('subCategory')
+        .populate('brand')
+        .limit(5);
     } else {
       relatedProducts = await this.productModel
         .find({
           category: product.category,
           subCategory: product.subCategory,
-        }).populate('category').populate('subCategory').limit(5);
+        })
+        .populate('category')
+        .populate('subCategory')
+        .limit(5);
     }
     return relatedProducts;
   }
@@ -357,11 +318,19 @@ export class ProductsService {
     //   );
   }
 
-  async updateProductrating(productId: string, reviewsNumber: number , rating:number) {
-const product = await this.findOne(productId);
-product.reviewsNumber = reviewsNumber;
-product.rating = rating;
-await product.save();
-return product;
+  async updateProductrating(
+    productId: string,
+    reviewsNumber: number,
+    rating: number,
+  ) {
+    const product = await this.findOne(productId);
+    product.reviewsNumber = reviewsNumber;
+    product.rating = rating;
+    await product.save();
+    return product;
+  }
+
+  getAdminProductsCount() {
+    return this.productModel.countDocuments();
   }
 }

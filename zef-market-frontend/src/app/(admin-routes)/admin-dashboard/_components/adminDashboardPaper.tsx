@@ -2,17 +2,16 @@
 import { Paper, Typography, Box, Link, useTheme } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import {
-  Book,
+  BrandingWatermark,
   Category,
-  Comment,
+  CurrencyExchange,
   Group,
-  LocalLibrary,
-  Note,
+  PermMedia,
+  Receipt,
   Reviews,
-  School,
+  TabletMac,
 } from "@mui/icons-material";
-import {  useGetAdminCountsQuery, useGetInstructorCountsQuery } from "@/redux/slices/api/utilsApiSlice";
-import { useAppSelector } from "@/redux/hooks";
+import {  useGetAdminCountsQuery } from "@/redux/slices/api/utilsApiSlice";
 
 const AdminDashboardPaper = () => {
   const { data: counts } = useGetAdminCountsQuery();
@@ -21,16 +20,28 @@ const AdminDashboardPaper = () => {
 
   const data = [
     {
-      label: "Courses",
-      value: counts?.coursesCount,
-      icon: <School fontSize="large" color="primary" />,
-      path: "/admin-dashboard/courses",
+      label: "Products",
+      value: counts?.productsCount,
+      icon: <TabletMac fontSize="large" color="primary" />,
+      path: "/admin-dashboard/products",
     },
     {
       label: "Categories",
       value: counts?.categoriesCount,
       icon: <Category fontSize="large" color="primary" />,
       path: "/admin-dashboard/categories",
+    },
+        {
+      label: "SubCategories",
+      value: counts?.subCategoriesCount,
+      icon: <Category fontSize="large" color="primary" />,
+      path: "/admin-dashboard/subcategories",
+    },
+          {
+      label: "Brands",
+      value: counts?.brandsCount,
+      icon: <BrandingWatermark fontSize="large" color="primary" />,
+      path: "/admin-dashboard/brands",
     },
     {
       label: "Users",
@@ -45,10 +56,22 @@ const AdminDashboardPaper = () => {
       path: "/admin-dashboard/reviews",
     },
     {
-      label: "Instructor request",
-      value: counts?.instructorRequestsCount,
-      icon: <Note fontSize="large" color="primary" />,
-      path: "/admin-dashboard/instructor-request",
+      label: "Orders",
+      value: counts?.ordersCount,
+      icon: <Receipt fontSize="large" color="primary" />,
+      path: "/admin-dashboard/orders",
+    },
+    {
+      label: "Banners",
+      value: counts?.bannersCount,
+      icon: <PermMedia fontSize="large" color="primary" />,
+      path: "/admin-dashboard/banners",
+    },
+    {
+      label: "Tax shipping",
+      value: counts?.bannersCount,
+      icon: <CurrencyExchange fontSize="large" color="primary" />,
+      path: "/admin-dashboard/taxAndSipping",
     },
   ];
 
@@ -59,7 +82,7 @@ const AdminDashboardPaper = () => {
       </Typography>
       <Grid container spacing={3}>
         {data.map((item, index) => (
-          <Grid size={{ xs: 12, sm: 6 }} key={index} flexWrap="wrap">
+          <Grid size={{ xs: 12,md :6,lg:3 }} key={index} flexWrap="wrap">
             <Paper
               elevation={3}
               sx={{

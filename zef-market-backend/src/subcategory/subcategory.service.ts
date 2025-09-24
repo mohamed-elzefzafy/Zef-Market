@@ -208,7 +208,8 @@ export class SubCategoryService {
     return subCategories;
   }
 
-  async getCategoriesCount() {
+  async getSubCategoriesCount() {
     return this.subCategoryModel.countDocuments();
   }
+
 }

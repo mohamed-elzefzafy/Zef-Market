@@ -1,139 +1,479 @@
+// "use client";
+// import SwipperComponent from "@/app/components/hero/SwipperComponent";
+// import { useGetBestSellerProductsQuery } from "@/redux/slices/api/productApiSlice";
+// import { Box, Button, Typography,Grid, Stack } from "@mui/material";
+// import ProductCard from "../products/_components/ProductCard";
+// import { useRouter } from "next/navigation";
+
+
+// const HomePage = () => {
+//   const router = useRouter();
+//   const { data: products } = useGetBestSellerProductsQuery();
+
+//   console.log(products);
+  
+
+
+//   return (
+//     <>
+//       <SwipperComponent />
+      
+
+//       {/* Products Section */}
+//       <Box sx={{ my: 10, px: { xs: 2, sm: 4, md: 12 } }}>
+//         <Typography sx={{ mb: 3, ml: 4, fontSize: "24px" }}>
+//           Products
+//         </Typography>
+
+//         {/* <Grid container spacing={2} justifyContent="center"> */}
+      
+//             <Stack flexDirection={"row"} flexWrap={"wrap"} gap={4} justifyContent={"center"}>
+//                   {products?.map((product) => (
+//               <ProductCard productInfo={product} key={product._id}/>
+//                   ))}
+//             </Stack>
+      
+//         {/* </Grid> */}
+
+//         <Button
+//           onClick={() => router.push("/products")}
+//           sx={{
+//             display: "block",
+//             mx: "auto",
+//             mt: 5,
+//             fontSize: 17,
+//             textTransform: "capitalize",
+//           }}
+//         >
+//           More Products
+//         </Button>
+//       </Box>
+//     </>
+//   );
+// };
+
+// export default HomePage;
+
+
+// "use client";
+// import SwipperComponent from "@/app/components/hero/SwipperComponent";
+// import { useGetBestSellerProductsQuery } from "@/redux/slices/api/productApiSlice";
+// import {
+//   Box,
+//   Button,
+//   Typography,
+//   Grid,
+//   Stack,
+//   TextField,
+//   InputAdornment,
+// } from "@mui/material";
+// import SearchIcon from "@mui/icons-material/Search";
+// import ProductCard from "../products/_components/ProductCard";
+// import { useRouter } from "next/navigation";
+
+// const HomePage = () => {
+//   const router = useRouter();
+//   const { data: products } = useGetBestSellerProductsQuery();
+
+//   console.log(products);
+
+//   return (
+//     <>
+//       {/* Search + Actions */}
+//       <Box
+//         sx={{
+//           px: { xs: 2, sm: 4, md: 12 },
+//           py: 4,
+//           display: "flex",
+//           flexDirection: "column",
+//           alignItems: "center",
+//           gap: 2,
+//         }}
+//       >
+//         {/* Search Bar */}
+//         <TextField
+//           placeholder="Search for products..."
+//           variant="outlined"
+//           fullWidth
+//           sx={{
+//             maxWidth: 600,
+//             bgcolor: "background.paper",
+//             borderRadius: 2,
+//             boxShadow: 1,
+//           }}
+//           InputProps={{
+//             startAdornment: (
+//               <InputAdornment position="start">
+//                 <SearchIcon color="action" />
+//               </InputAdornment>
+//             ),
+//           }}
+//         />
+
+//         {/* Buttons */}
+//         <Stack
+//           direction="row"
+//           spacing={2}
+//           sx={{ mt: 1 }}
+//           flexWrap="wrap"
+//           justifyContent="center"
+//         >
+//           <Button
+//             variant="contained"
+//             sx={{
+//               textTransform: "capitalize",
+//               borderRadius: 3,
+//               px: 3,
+//               py: 1,
+//             }}
+//             onClick={() => router.push("/products")}
+//           >
+//             Browse Products
+//           </Button>
+//           <Button
+//             variant="outlined"
+//             sx={{
+//               textTransform: "capitalize",
+//               borderRadius: 3,
+//               px: 3,
+//               py: 1,
+//             }}
+//             onClick={() => router.push("/categories")}
+//           >
+//             Browse Categories
+//           </Button>
+//         </Stack>
+//       </Box>
+
+//       {/* Slider */}
+//       <SwipperComponent />
+
+//       {/* Products Section */}
+//       <Box sx={{ my: 10, px: { xs: 2, sm: 4, md: 12 } }}>
+//         <Typography sx={{ mb: 3, ml: 4, fontSize: "24px" }}>
+//           Products
+//         </Typography>
+
+//         <Stack
+//           flexDirection={"row"}
+//           flexWrap={"wrap"}
+//           gap={4}
+//           justifyContent={"center"}
+//         >
+//           {products?.map((product) => (
+//             <ProductCard productInfo={product} key={product._id} />
+//           ))}
+//         </Stack>
+
+//         <Button
+//           onClick={() => router.push("/products")}
+//           sx={{
+//             display: "block",
+//             mx: "auto",
+//             mt: 5,
+//             fontSize: 17,
+//             textTransform: "capitalize",
+//           }}
+//         >
+//           More Products
+//         </Button>
+//       </Box>
+//     </>
+//   );
+// };
+
+// export default HomePage;
+
+
+
+
+
+
+
+
 "use client";
+import SwipperComponent from "@/app/components/hero/SwipperComponent";
+import { useGetBestSellerProductsQuery } from "@/redux/slices/api/productApiSlice";
 import {
   Box,
   Button,
-  Container,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
+  Typography,
   Stack,
+  TextField,
+  InputAdornment,
+  IconButton,
+  InputBase,
 } from "@mui/material";
-import { useRouter, useSearchParams } from "next/navigation";
-import InputBase from "@mui/material/InputBase";
 import SearchIcon from "@mui/icons-material/Search";
-import { styled, alpha } from "@mui/material/styles";
-import Image from "next/image";
-import { useGetCategoriesQuery } from "@/redux/slices/api/categoryApiSlice";
-import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import ProductCard from "../products/_components/ProductCard";
+import { useRouter } from "next/navigation";
 import { createSearchKeywordAction } from "@/redux/slices/searchSlice";
-import Grid from "@mui/material/Grid";
-// import SearchParamComponent from "./_componens/SearchParamComponent";
+import { useAppDispatch } from "@/redux/hooks";
+import { ChangeEvent, useState } from "react";
 
-const Search = styled("div")(({ theme }) => ({
-  position: "relative",
-  paddingLeft: 0,
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  "&:hover": {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginLeft: 0,
-  width: "100%",
-  [theme.breakpoints.up("sm")]: {
-    // marginLeft: theme.spacing(1),
-    width: "auto",
-    minWidth: "200px",
-  },
-}));
-
-const SearchIconWrapper = styled("div")(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: "100%",
-  position: "absolute",
-  pointerEvents: "none",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  fontSize: "14px",
-  color: "inherit",
-  width: "100%",
-  "& .MuiInputBase-input": {
-    padding: theme.spacing(1, 1, 1, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create("width"),
-    [theme.breakpoints.up("sm")]: {
-      fontSize: "16px",
-      width: "12ch",
-      "&:focus": {
-        width: "20ch",
-      },
-    },
-  },
-}));
-
-export default function Home() {
+const HomePage = () => {
   const router = useRouter();
-  const searcParam = useSearchParams();
-  const searchPramQuery = searcParam.get("CategoryIdfromAdminDashBoard");
-  const dispatch = useAppDispatch();
-  const { searchKeyWord } = useAppSelector((state) => state.search);
-  const [searchWord, setSearchWord] = useState("");
-  const { data: categoriesResponse } = useGetCategoriesQuery();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [category, setCategory] = useState(searchPramQuery || "");
-  const { userInfo } = useAppSelector((state) => state.auth);
+  const { data: products } = useGetBestSellerProductsQuery();
+    const dispatch = useAppDispatch();
 
-  // const {
-  //   data: coursesResponse,
-  //   refetch,
-  //   isLoading,
-  // } = useGetCoursesQuery(
-  //   `?search=${searchKeyWord || ""}&page=${currentPage}&category=${category}`
-  // );
+  //     const createSaerchKeywordHandler = (value : string) => {
+  //  dispatch(createSearchKeywordAction(value));
+  //  router.push("/products");
+  // }
 
-  const resetFiltersAndSearch = () => {
-    setCategory("");
-    setSearchWord("");
-    setCurrentPage(1);
-    dispatch(createSearchKeywordAction(""));
-    // refetch();
+  const [searchValue, setSearchValue] = useState("");
+
+// const handleSearch = () => {
+//   if (searchValue.trim()) {
+//     dispatch(createSearchKeywordAction(searchValue));
+//     router.push("/products");
+//   }
+// };
+
+
+  const handleSearch = () => {
+    if (searchValue.trim()) {
+      dispatch(createSearchKeywordAction(searchValue));
+      router.push("/products");
+    }
   };
+
   return (
-    <Container>
-      <Stack direction={"row"} sx={{ pt: 1,px:5, justifyContent: "flex-start",gap:1 }}>
-        <Button variant="contained" size="small" sx={{textTransform:"capitalize"}} onClick={()=> router.push("/products")}>Products</Button>
-          <Button variant="contained" size="small" sx={{textTransform:"capitalize"}}>Categories</Button>
-      </Stack>
-      <Stack sx={{ px: { xs: 2, sm: 4, md: 6 }, py: 2 }}>
-        {/* <SearchParamComponent returnPath="/admin-dashboard/categories" /> */}
-        <Box
+    <>
+      {/* Search + Actions */}
+      <Box
+        sx={{
+          px: { xs: 2, sm: 4, md: 12 },
+          py: 4,
+        }}
+      >
+        <Stack
+          direction={{ xs: "column", lg: "row" }}
+          spacing={2}
+          alignItems="flex-start"
+        >
+          {/* Search Bar */}
+          {/* <TextField
+            placeholder="Search for products..."
+            variant="outlined"
+            fullWidth
+            sx={{
+              maxWidth: { md: 500 },
+              bgcolor: "background.paper",
+              borderRadius: 2,
+              boxShadow: 1,
+            }}
+            onChange={(e : ChangeEvent<HTMLInputElement>) => createSaerchKeywordHandler(e.target.value) }
+          slotProps={{
+    input: {
+      startAdornment: (
+        <InputAdornment position="start">
+          <SearchIcon color="action" />
+        </InputAdornment>
+      ),
+    },
+  }}
+          /> */}
+
+          {/* <TextField
+  placeholder="Search for products..."
+  variant="outlined"
+  fullWidth
+  value={searchValue}
+  onChange={(e) => setSearchValue(e.target.value)}
+  onKeyDown={(e) => {
+    if (e.key === "Enter") handleSearch(); // يدوس Enter
+  }}
+  sx={{
+    maxWidth: { md: 500 },
+    bgcolor: "background.paper",
+    borderRadius: 2,
+    boxShadow: 1,
+  }}
+  slotProps={{
+    input: {
+      startAdornment: (
+        <InputAdornment position="start">
+          <SearchIcon color="action" />
+        </InputAdornment>
+      ),
+    },
+  }}
+/>
+
+<Button
+  variant="contained"
+  sx={{ ml: 2 }}
+  onClick={handleSearch}
+>
+  Search
+</Button> */}
+
+  {/* <TextField
+        placeholder="Search for products..."
+        variant="outlined"
+        fullWidth
+        value={searchValue}
+        onChange={(e) => setSearchValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleSearch();
+        }}
+        sx={{
+          bgcolor: "background.paper",
+          borderRadius: 3,
+          boxShadow: 1,
+        }}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon color="action" />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={handleSearch}
+                  edge="end"
+                  sx={{
+                    bgcolor: "primary.main",
+                    color: "white",
+                    "&:hover": { bgcolor: "primary.dark" },
+                    borderRadius: 2,
+                    px: 2,
+                  }}
+                >
+                  Search
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
+        }}
+      /> */}
+
+          <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        width: "100%",
+        maxWidth: 500,
+        bgcolor: "background.paper",
+        borderRadius: 1,
+        overflow: "hidden",
+        boxShadow: 1,
+      }}
+    >
+      {/* Input */}
+      <InputBase
+        placeholder="Search in shop ..."
+        value={searchValue}
+        onChange={(e) => setSearchValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleSearch();
+        }}
+        sx={{
+          flex: 1,
+          px: 2,
+          // py: 1,
+        }}
+      />
+
+      {/* Search Button */}
+      <IconButton
+        onClick={handleSearch}
+        sx={{
+          bgcolor: "#f0c14b", // أصفر زي أمازون
+          borderRadius: 0, // مربع عشان يبقى متصل بالبار
+          px: 2,
+          "&:hover": { bgcolor: "#ddb347" },
+          height:"100%"
+        }}
+      >
+        <SearchIcon sx={{ color: "black" }} />
+      </IconButton>
+    </Box>
+
+          {/* Buttons */}
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{
+              width: { xs: "100%", md: "auto" },
+              justifyContent: { xs: "center", md: "flex-start" },
+              mt: { xs: 1, md: 0 },
+            }}
+          >
+<Button
+  variant="contained"
+  size="small"
+  sx={{
+    textTransform: "capitalize",
+    borderRadius: 3,
+    px: { xs: 2, md: 3 },
+      py: { xs: 0.5, md: 0.9 },
+    fontSize: { xs: 12,sm:13, md: 14 },
+    width: { xs: "100%", md: "auto" }, // هنا بدل fullWidth
+  }}
+  onClick={() => router.push("/products")}
+>
+  Browse Products
+</Button>
+
+<Button
+  variant="outlined"
+  size="small"
+  sx={{
+    textTransform: "capitalize",
+    borderRadius: 3,
+    px: { xs: 2, md: 3 },
+    py: { xs: 0.5, md: 0.9 },
+    fontSize: { xs: 13, md: 14 },
+    width: { xs: "100%", md: "auto" }, // هنا برضه
+  }}
+  onClick={() => router.push("/categories")}
+>
+  Browse Categories
+</Button>
+
+          </Stack>
+        </Stack>
+      </Box>
+
+      {/* Slider */}
+      <SwipperComponent />
+
+      {/* Products Section */}
+      <Box sx={{ my: 10, px: { xs: 2, sm: 4, md: 12 } }}>
+        <Typography sx={{ mb: 3, ml: 4, fontSize: "24px" }}>
+          Products
+        </Typography>
+
+        <Stack
+          flexDirection={"row"}
+          flexWrap={"wrap"}
+          gap={4}
+          justifyContent={"center"}
+        >
+          {products?.map((product) => (
+            <ProductCard productInfo={product} key={product._id} />
+          ))}
+        </Stack>
+
+        <Button
+          onClick={() => router.push("/products")}
           sx={{
-            width: "100%",
-            aspectRatio: "16/9",
-            overflow: "hidden",
-            "& img": {
-              objectFit: "cover",
-              width: "100%",
-              height: "100%",
-            },
+            display: "block",
+            mx: "auto",
+            mt: 5,
+            fontSize: 17,
+            textTransform: "capitalize",
           }}
         >
-          <Image
-            alt="hero"
-            src="/zef-market-hero.jpg"
-            width={1920}
-            height={1080}
-            quality={100}
-            style={{ width: "100%", height: "100%" }}
-          />
-        </Box>
-        {/* <Grid
-          container
-          spacing={2}
-          sx={{
-            alignItems: "space-between",
-            justifyContent: "center",
-            mb: 2,
-            mt: 3,
-            width: { xs: "100%", sm: "80%", md: "60%" },
-          }}
-        ></Grid> */}
-      </Stack>
-    </Container>
+          More Products
+        </Button>
+      </Box>
+    </>
   );
-}
+};
+
+export default HomePage;

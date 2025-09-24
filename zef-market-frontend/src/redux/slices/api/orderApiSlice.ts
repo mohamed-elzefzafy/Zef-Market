@@ -1,10 +1,9 @@
-import { IOrder } from "@/types/order";
+import { IOrder, IOrderResponse } from "@/types/order";
 import { apiSlice } from "./apiSlice";
-import { ICart } from "@/types/cart";
 
 export const orderApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getOrderById: builder.query<IOrder , string | void>({
+    getOrderById: builder.query<IOrder, string | void>({
       query: (orderId) => ({
         url: `/api/v1/order/${orderId}`,
       }),
@@ -16,83 +15,84 @@ export const orderApiSlice = apiSlice.injectEndpoints({
       query: (payLoad) => ({
         url: `/api/v1/order/create-order`,
         headers: {
-          "Cache-Control": "no-store", 
+          "Cache-Control": "no-store",
         },
         method: "POST",
         body: payLoad,
       }),
     }),
 
-    // getOneCategory: builder.query<ICategory, string | void>({
+    toggleOrderToDeliverdStatue: builder.mutation<IOrder, string | void>({
+      query: (id) => ({
+        url: `/api/v1/order/admin-update-order-to-deliver/${id}`,
+        method: "PATCH",
+      }),
+    }),
+    toggleOrderToPaidStatue: builder.mutation<IOrder, string | void>({
+      query: (id) => ({
+        url: `/api/v1/order/admin-update-order-to-paid/${id}`,
+        method: "PATCH",
+      }),
+    }),
+
+
+    // getOneOrder: builder.query<IOrder, string | void>({
     //   query: (id) => ({
-    //     url: `/api/v1/category/${id}`,
+    //     url: `/api/v1/order/${id}`,
     //   }),
     //   keepUnusedDataFor: 5,
-    //   providesTags: ["Category"],
+    //   providesTags: ["Order"],
     // }),
 
-    // createCategory: builder.mutation({
-    //   query: (data) => ({
-    //     url: `/api/v1/category`,
-    //     method: "POST",
-    //     body: data,
-    //   }),
-    // }),
+    getOrdersAdmin: builder.query<IOrderResponse, string | void>({
+      query: (queries = "") => ({
+        url: `/api/v1/order/get-admin-all-orders${queries}&_t=${Date.now()}`,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }),
+      keepUnusedDataFor: 1,
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.orders.map(({ _id }) => ({
+                type: "Order" as const,
+                _id,
+              })),
+              { type: "Order", id: "LIST" },
+            ]
+          : [{ type: "Order", id: "LIST" }],
+    }),
 
-    // getCategoriesAdmin: builder.query<ICategoryResponse, string | void>({
-    //   query: (queries = "") => ({
-    //     url: `/api/v1/category${queries}&_t=${Date.now()}`,
-    //     headers: {
-    //       "Cache-Control": "no-store",
-    //     },
-    //   }),
-    //   keepUnusedDataFor: 1,
-    //   providesTags: (result) =>
-    //     result
-    //       ? [
-    //           ...result.categories.map(({ _id }) => ({
-    //             type: "Category" as const,
-    //             _id,
-    //           })),
-    //           { type: "Category", id: "LIST" },
-    //         ]
-    //       : [{ type: "Category", id: "LIST" }],
-    // }),
+        getOrdersCurrentUser: builder.query<IOrderResponse, string | void>({
+      query: (queries = "") => ({
+        url: `/api/v1/order/get-current-user-all-orders${queries}&_t=${Date.now()}`,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }),
+      keepUnusedDataFor: 1,
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.orders.map(({ _id }) => ({
+                type: "Order" as const,
+                _id,
+              })),
+              { type: "Order", id: "LIST" },
+            ]
+          : [{ type: "Order", id: "LIST" }],
+    }),
 
-    // deleteCategoryAdminPage: builder.mutation<
-    //   void,
-    //   { _id: string; page?: number }
-    // >({
-    //   query: ({ _id }) => ({
-    //     url: `/api/v1/category/${_id}`,
-    //     method: "DELETE",
-    //   }),
-    //   async onQueryStarted({ _id, page }, { dispatch, queryFulfilled }) {
-    //     const queryParams = `?page=${page}`;
-    //     const patchResult = dispatch(
-    //       categoryApiSlice.util.updateQueryData(
-    //         "getCategoriesAdmin",
-    //         queryParams,
-    //         (draft: ICategoryResponse) => {
-    //           draft.categories = draft.categories.filter(
-    //             (category) => category._id !== _id
-    //           );
-    //           draft.pagination.total -= 1;
-    //           if (draft.categories.length === 0 && page && page > 1) {
-    //             draft.pagination.page = page - 1;
-    //           }
-    //         }
-    //       )
-    //     );
-    //     try {
-    //       await queryFulfilled;
-    //     } catch {
-    //       patchResult.undo();
-    //     }
-    //   },
-    //   invalidatesTags: (result, error, { _id }) => [{ type: "Category", _id }],
-    // }),
+
   }),
 });
 
-export const {useCreateOrderMutation , useGetOrderByIdQuery} = orderApiSlice;
+export const {
+  useCreateOrderMutation,
+  useGetOrderByIdQuery,
+  useToggleOrderToDeliverdStatueMutation,
+  useToggleOrderToPaidStatueMutation,
+  useGetOrdersAdminQuery,
+  useGetOrdersCurrentUserQuery,
+} = orderApiSlice;

@@ -16,10 +16,9 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { common } from "@mui/material/colors";
 import { useLogoutMutation } from "@/redux/slices/api/authApiSlice";
-import { logoutAction, setCredentials } from "@/redux/slices/authSlice";
+import { logoutAction } from "@/redux/slices/authSlice";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import { styled } from '@mui/material/styles';
 import Badge, { BadgeProps } from '@mui/material/Badge';
 import { ShoppingCart } from "@mui/icons-material";
@@ -257,24 +256,6 @@ function Header() {
                     </MenuItem>
                   )}
 
-                  {userInfo.role === "instructor" && (
-                    <MenuItem
-                      onClick={handleCloseUserMenu}
-                      disabled={!userInfo.isAccountVerified}
-                    >
-                      <Typography
-                        href={"/instructor-dashboard"}
-                        sx={{
-                          textAlign: "center",
-                          fontSize: { xs: "0.875rem", sm: "1rem" },
-                        }}
-                        component={Link}
-                      >
-                        instructor-dashboard
-                      </Typography>
-                    </MenuItem>
-                  )}
-
                   <MenuItem
                     onClick={handleCloseUserMenu}
                     disabled={!userInfo.isAccountVerified}
@@ -317,6 +298,26 @@ function Header() {
                         </Typography>
                       </MenuItem>
                     )}
+
+                          {userInfo.role === "user" && (
+                      <MenuItem
+                        onClick={handleCloseUserMenu}
+                        href={`/my-orders`}
+                        component={Link}
+                      >
+                        <Typography
+                          sx={{
+                            textAlign: "center",
+                            fontSize: { xs: "0.875rem", sm: "1rem" },
+                            textDecoration: "none",
+                            color: "inherit",
+                          }}
+                        >
+                          My Orders
+                        </Typography>
+                      </MenuItem>
+                    )}
+
 
         
 

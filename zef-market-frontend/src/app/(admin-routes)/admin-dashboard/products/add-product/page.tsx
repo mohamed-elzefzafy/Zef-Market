@@ -73,38 +73,43 @@ export default function AddProductPage() {
   const { data: categoriesResponse } = useGetCategoriesQuery();
   // const { data: subCategoriesResponse } = useGetsubcategoriesQuery();
   const { data: brandsResponse } = useGetBrandsQuery();
-// const [SelectedCategory, setSelectedCategory] = useState("")
+  // const [SelectedCategory, setSelectedCategory] = useState("")
   const [category, setCategory] = useState("");
-  const { register ,control, handleSubmit, reset,  formState: { isSubmitting ,errors}, } = useForm<IProductInput>({
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting, errors },
+  } = useForm<IProductInput>({
     // resolver: zodResolver(schema),
     defaultValues: {
       title: "",
       description: "",
       price: 0,
       stock: 0,
-      discount:0,
+      discount: 0,
       category: "",
       subCategory: "",
       brand: "",
     },
   });
 
-      const [images, setImages] = useState<File[] | null>([]);
+  const [images, setImages] = useState<File[] | null>([]);
 
-    const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const filesArray = Array.from(e.target.files);
       setImages(filesArray);
     }
   };
 
-
-    const { data: subCategoriesResponse } = useGetsubcategoriesQuery(`?category=${category}`);
-
-
+  const { data: subCategoriesResponse } = useGetsubcategoriesQuery(
+    `?category=${category}`
+  );
 
   const onSubmit = async (data: IProductInput) => {
-        const formData = new FormData();
+    const formData = new FormData();
     formData.append("title", data.title);
     formData.append("description", data.description);
     formData.append("price", data.price.toString());
@@ -114,43 +119,46 @@ export default function AddProductPage() {
     formData.append("stock", data.stock.toString());
     formData.append("category", data.category);
     formData.append("subCategory", data.subCategory);
-      if (data.brand) {
-  formData.append("brand", data.brand);
+    if (data.brand) {
+      formData.append("brand", data.brand);
     }
 
     images?.forEach((image) => formData.append("images", image));
     try {
       await createProduct(formData).unwrap();
-        toast.success("Product created successfully");
-        reset();
+      toast.success("Product created successfully");
+      reset();
       setImages(null);
       router.push("/admin-dashboard/products");
     } catch (error: any) {
-      toast.error(error?.data?.message||"Failed to add product 🚀");
-
+      toast.error(error?.data?.message || "Failed to add product 🚀");
     }
   };
 
   return (
     <Container maxWidth="sm">
       <Box sx={{ mt: 5 }} textAlign={"center"}>
-    <Typography variant="h6" component="h2" sx={{ ml: 2 ,mb:2}}>
-      Add Product
-        <Tooltip
-          title={"back to Categories admin dashboard"}
-          placement="right-end"
-          enterDelay={200}
-        >
-          <IconButton
-            onClick={() => router.push(`/admin-dashboard/products`)}
+        <Typography variant="h6" component="h2" sx={{ ml: 2, mb: 2 }}>
+          Add Product
+          <Tooltip
+            title={"back to Categories admin dashboard"}
+            placement="right-end"
+            enterDelay={200}
           >
-            <KeyboardDoubleArrowRight sx={{ color: "primary.main" }} />
-          </IconButton>
-        </Tooltip>
-      </Typography>
+            <IconButton
+              onClick={() => router.push(`/admin-dashboard/products`)}
+            >
+              <KeyboardDoubleArrowRight sx={{ color: "primary.main" }} />
+            </IconButton>
+          </Tooltip>
+        </Typography>
 
-        <Box >
-          <Stack component={"form"} onSubmit={handleSubmit(onSubmit)} spacing={3}>
+        <Box>
+          <Stack
+            component={"form"}
+            onSubmit={handleSubmit(onSubmit)}
+            spacing={3}
+          >
             {/* Title */}
             <Controller
               name="title"
@@ -216,20 +224,20 @@ export default function AddProductPage() {
               />
             </Stack>
 
-                      <Controller
-                name="stock"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    type="number"
-                    label="Stock"
-                    fullWidth
-                    // error={!!fieldState.error}
-                    // helperText={fieldState.error?.message}
-                  />
-                )}
-              />
+            <Controller
+              name="stock"
+              control={control}
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  type="number"
+                  label="Stock"
+                  fullWidth
+                  // error={!!fieldState.error}
+                  // helperText={fieldState.error?.message}
+                />
+              )}
+            />
 
             {/* Category */}
             {/* <Controller
@@ -254,33 +262,31 @@ export default function AddProductPage() {
               )}
             /> */}
 
-            
-      <TextField
-        select
-        label="Category"
-        fullWidth
-        defaultValue=""
-        {...register("category", { required: "Category is required" })}
-        error={!!errors.category}
-        helperText={errors.category && "Category is required"}
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-      >
-        {(categoriesResponse?.categories?.length ?? 0) > 0 ? (
-          categoriesResponse?.categories.map((category) => (
-            <MenuItem key={category._id} value={category._id}>
-              {category.title}
-            </MenuItem>
-          ))
-        ) : (
-          <MenuItem disabled value="">
-            No categories available
-          </MenuItem>
-        )}
-      </TextField>
+            <TextField
+              select
+              label="Category"
+              fullWidth
+              defaultValue=""
+              {...register("category", { required: "Category is required" })}
+              error={!!errors.category}
+              helperText={errors.category && "Category is required"}
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              {(categoriesResponse?.categories?.length ?? 0) > 0 ? (
+                categoriesResponse?.categories.map((category) => (
+                  <MenuItem key={category._id} value={category._id}>
+                    {category.title}
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem disabled value="">
+                  No categories available
+                </MenuItem>
+              )}
+            </TextField>
 
-          
-              <Controller
+            <Controller
               name="subCategory"
               control={control}
               render={({ field, fieldState }) => (
@@ -300,10 +306,10 @@ export default function AddProductPage() {
                   )}
                 </FormControl>
               )}
-            /> 
+            />
 
             {/* Brand */}
-           <Controller
+            <Controller
               name="brand"
               control={control}
               render={({ field }) => (
@@ -318,60 +324,68 @@ export default function AddProductPage() {
                   </Select>
                 </FormControl>
               )}
-            /> 
-            
-    <Stack direction="row" flexWrap="wrap" sx={{justifyContent:"center" ,alignItems:"center"}}>
-          {images && images.map(image => (
-          <Image
-          key={image.name}
-          src={URL.createObjectURL(image)}
-          width={100}
-          height={100}
-          style={{ objectFit: "contain", borderRadius: "3px", marginLeft: "1px", marginRight: "1px" }}
-          alt="product"
-        />
-            ))}
-    </Stack>
-  
+            />
 
+            <Stack
+              direction="row"
+              flexWrap="wrap"
+              sx={{ justifyContent: "center", alignItems: "center" }}
+            >
+              {images &&
+                images.map((image) => (
+                  <Image
+                    key={image.name}
+                    src={URL.createObjectURL(image)}
+                    width={100}
+                    height={100}
+                    style={{
+                      objectFit: "contain",
+                      borderRadius: "3px",
+                      marginLeft: "1px",
+                      marginRight: "1px",
+                    }}
+                    alt="product"
+                  />
+                ))}
+            </Stack>
 
-                <Button
-        component="label"
-        variant="outlined"
-        fullWidth
-        sx={{ textTransform: "capitalize" }}
-        startIcon={<ImageIcon />}
-      >
-        {images && images?.length > 0
-          ? "images selected"
-          : "Upload images"}
-        <input
-          type="file"
-          hidden
-            accept="image/*"
-          multiple
-          onChange={handleImageChange}
-        />
-      </Button>
+            <Button
+              component="label"
+              variant="outlined"
+              fullWidth
+              sx={{ textTransform: "capitalize" }}
+              startIcon={<ImageIcon />}
+            >
+              {images && images?.length > 0
+                ? "images selected"
+                : "Upload images"}
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+              />
+            </Button>
 
-      <Button
-        type="button"
-        variant="contained"
-        fullWidth
-        disabled={isSubmitting}
-        sx={{ textTransform: "capitalize", position: "relative" }}
-      >
-        {isSubmitting ? (
-          <CircularProgress
-            size={24}
-            sx={{
-              color: "white",
-            }}
-          />
-        ) : (
-          "Add images"
-        )}
-      </Button>
+            <Button
+              type="button"
+              variant="contained"
+              fullWidth
+              disabled={isSubmitting}
+              sx={{ textTransform: "capitalize", position: "relative" }}
+            >
+              {isSubmitting ? (
+                <CircularProgress
+                  size={24}
+                  sx={{
+                    color: "white",
+                  }}
+                />
+              ) : (
+                "Add images"
+              )}
+            </Button>
 
             {/* Submit Button */}
             <Button
@@ -380,12 +394,16 @@ export default function AddProductPage() {
               disabled={isLoading}
               fullWidth
             >
-              {isSubmitting ?     <CircularProgress
-            size={24}
-            sx={{
-              color: "white",
-            }}
-          /> : "Add Product"}
+              {isSubmitting ? (
+                <CircularProgress
+                  size={24}
+                  sx={{
+                    color: "white",
+                  }}
+                />
+              ) : (
+                "Add Product"
+              )}
             </Button>
           </Stack>
         </Box>

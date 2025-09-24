@@ -39,25 +39,6 @@ export class ProductsController {
     return this.productsService.create(createProductDto, files);
   }
 
-  // @Get()
-  // findAll(
-  //   @Query('page') page: string = '1',
-  //   @Query('limit') limit: string = `${PAGE_LIMIT_ADMIN}`,
-  //   @Query('category') category?: string,
-  //   @Query('subCategory') subCategory?: string,
-  //   @Query('brand') brand?: string,
-  //   @Query('search') search?: string,
-  // ) {
-  //   return this.productsService.findAll(
-  //     +page,
-  //     +limit,
-  //     category,
-  //     subCategory,
-  //     brand,
-  //     search,
-  //   );
-  // }
-
 @Get()
 findAll(
   @Query('page') page: string = '1',
@@ -86,7 +67,12 @@ findAll(
   );
 }
 
-  @Get('related-product/:id')
+  @Get('best-seller-products')
+  bestSellerProducts() {
+    return this.productsService.bestSellerProducts();
+  }
+
+    @Get('related-product/:id')
   findRelatedProduct(@Param('id', ParseObjectIdPipe) id: string) {
     return this.productsService.findRelatedProduct(id);
   }
