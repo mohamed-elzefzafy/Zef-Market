@@ -1,5 +1,5 @@
 import { CloudinaryObject } from "./auth";
-import { ICategory } from "./category";
+import { ICategory } from "./coupons";
 import { Pagination } from "./product";
 
 export interface ISubCategoryResponse {

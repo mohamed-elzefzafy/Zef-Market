@@ -6,6 +6,7 @@ import {
   Category,
   CurrencyExchange,
   Group,
+  Money,
   PermMedia,
   Receipt,
   Reviews,
@@ -72,6 +73,12 @@ const AdminDashboardPaper = () => {
       value: counts?.bannersCount,
       icon: <CurrencyExchange fontSize="large" color="primary" />,
       path: "/admin-dashboard/taxAndSipping",
+    },
+        {
+      label: "Coupons",
+      value: counts?.couponsCount,
+      icon: <Money fontSize="large" color="primary" />,
+      path: "/admin-dashboard/coupons",
     },
   ];
 

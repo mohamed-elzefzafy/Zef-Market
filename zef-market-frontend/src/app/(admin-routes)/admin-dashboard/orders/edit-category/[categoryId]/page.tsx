@@ -1,6 +1,10 @@
 "use client";
-import { useCreateCategoryMutation, useGetOneCategoryQuery, useUpdateCategoryMutation } from "@/redux/slices/api/categoryApiSlice";
-import { IAddCategory } from "@/types/category";
+import {
+  useCreateCategoryMutation,
+  useGetOneCategoryQuery,
+  useUpdateCategoryMutation,
+} from "@/redux/slices/api/categoryApiSlice";
+import { IAddCategory } from "@/types/coupons";
 import { KeyboardDoubleArrowRight } from "@mui/icons-material";
 import {
   Button,
@@ -19,12 +23,18 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import ImageIcon from "@mui/icons-material/Image";
 
-const EditCategoryAdminPage = ({ params }: { params: Promise<{ categoryId: string }> }) => {
-    const router = useRouter();
-    const resolvedParams = use(params);
-        const [imageFile, setImageFile] = useState<File | null>(null);
-    const {data : category ,refetch} = useGetOneCategoryQuery(resolvedParams.categoryId);
-    
+const EditCategoryAdminPage = ({
+  params,
+}: {
+  params: Promise<{ categoryId: string }>;
+}) => {
+  const router = useRouter();
+  const resolvedParams = use(params);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const { data: category, refetch } = useGetOneCategoryQuery(
+    resolvedParams.categoryId
+  );
+
   const [updateCategory] = useUpdateCategoryMutation();
 
   const {
@@ -35,26 +45,25 @@ const EditCategoryAdminPage = ({ params }: { params: Promise<{ categoryId: strin
     formState: { isSubmitting, errors },
   } = useForm<IAddCategory>();
 
-
-      useEffect(() => {
-      if (category) {
-        setValue("title", category.title);
-        refetch();
-      }
-    }, [category, refetch, setValue] );
+  useEffect(() => {
+    if (category) {
+      setValue("title", category.title);
+      refetch();
+    }
+  }, [category, refetch, setValue]);
 
   const onSubmit = async (values: IAddCategory) => {
     console.log(values);
-    
+
     try {
-                const formData = new FormData();
+      const formData = new FormData();
       formData.append("title", values.title);
 
       if (imageFile) {
         formData.append("image", imageFile);
       }
 
-          await updateCategory({
+      await updateCategory({
         payLoad: formData,
         categoryId: resolvedParams.categoryId,
       }).unwrap();
@@ -68,11 +77,11 @@ const EditCategoryAdminPage = ({ params }: { params: Promise<{ categoryId: strin
       toast.error((error as { data: { message: string } })?.data?.message);
     }
   };
-    const handleImageFile = (e: ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files?.[0]) {
-        setImageFile(e.target.files[0]);
-      }
-    };
+  const handleImageFile = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setImageFile(e.target.files[0]);
+    }
+  };
 
   return (
     <Stack
@@ -125,63 +134,57 @@ const EditCategoryAdminPage = ({ params }: { params: Promise<{ categoryId: strin
       Update category
       </Button> */}
 
-        {imageFile ? (
-              <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-                <Image
-                  src={URL.createObjectURL(imageFile)}
-                  width={200}
-                  height={200}
-                  style={{ objectFit: "contain", borderRadius: "5px" }}
-                  alt="categoryImage"
-                />
-              </Box>
-            ) :
-                category?.image.url ?  <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-                <Image
-                  src={category?.image.url }
-                  width={200}
-                  height={200}
-                  style={{ objectFit: "contain", borderRadius: "5px" }}
-                  alt="profileImage"
-                />
-              </Box> : null
-            
-            }
-      
-            <Button
-              component="label"
-              variant="outlined"
-              fullWidth
-              sx={{ textTransform: "capitalize" }}
-              startIcon={<ImageIcon />}
-            >
-              {imageFile ? "category image selected" : "Upload category image"}
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleImageFile}
-              />
-            </Button>
-      
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              disabled={isSubmitting}
-              sx={{ textTransform: "capitalize", position: "relative" }}
-            >
-              {isSubmitting ? (
-                <CircularProgress
-                  size={24}
-                  sx={{
-                    color: "white",
-                  }}
-                />
-              ) : (
-                "Update Category"
-              )}
-            </Button>
+      {imageFile ? (
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+          <Image
+            src={URL.createObjectURL(imageFile)}
+            width={200}
+            height={200}
+            style={{ objectFit: "contain", borderRadius: "5px" }}
+            alt="categoryImage"
+          />
+        </Box>
+      ) : category?.image.url ? (
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+          <Image
+            src={category?.image.url}
+            width={200}
+            height={200}
+            style={{ objectFit: "contain", borderRadius: "5px" }}
+            alt="profileImage"
+          />
+        </Box>
+      ) : null}
+
+      <Button
+        component="label"
+        variant="outlined"
+        fullWidth
+        sx={{ textTransform: "capitalize" }}
+        startIcon={<ImageIcon />}
+      >
+        {imageFile ? "category image selected" : "Upload category image"}
+        <input type="file" hidden accept="image/*" onChange={handleImageFile} />
+      </Button>
+
+      <Button
+        type="submit"
+        variant="contained"
+        fullWidth
+        disabled={isSubmitting}
+        sx={{ textTransform: "capitalize", position: "relative" }}
+      >
+        {isSubmitting ? (
+          <CircularProgress
+            size={24}
+            sx={{
+              color: "white",
+            }}
+          />
+        ) : (
+          "Update Category"
+        )}
+      </Button>
     </Stack>
   );
 };

@@ -1,6 +1,9 @@
 "use client";
-import { useCreateCategoryMutation, useGetOneCategoryQuery, useUpdateCategoryMutation } from "@/redux/slices/api/categoryApiSlice";
-import { IAddCategory } from "@/types/category";
+import {
+  useCreateCategoryMutation,
+  useGetOneCategoryQuery,
+  useUpdateCategoryMutation,
+} from "@/redux/slices/api/categoryApiSlice";
 import { KeyboardDoubleArrowRight } from "@mui/icons-material";
 import {
   Button,
@@ -19,13 +22,20 @@ import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import ImageIcon from "@mui/icons-material/Image";
 import { ICreateTaxAndSipping } from "@/types/taxAndSipping";
-import { useGetAdminTaxAndShippingQuery, useUpdateTaxAndShippingMutation } from "@/redux/slices/api/taxAndSippingApiSlice";
+import {
+  useGetAdminTaxAndShippingQuery,
+  useUpdateTaxAndShippingMutation,
+} from "@/redux/slices/api/taxAndSippingApiSlice";
 import Loading from "@/app/loading";
 
 const TaxAndSippingPage = () => {
-    const router = useRouter();
-    const {data : taxAndSipping ,isLoading ,refetch} = useGetAdminTaxAndShippingQuery();
-    const [updateTaxAndShipping] = useUpdateTaxAndShippingMutation()
+  const router = useRouter();
+  const {
+    data: taxAndSipping,
+    isLoading,
+    refetch,
+  } = useGetAdminTaxAndShippingQuery();
+  const [updateTaxAndShipping] = useUpdateTaxAndShippingMutation();
 
   const {
     register,
@@ -35,35 +45,36 @@ const TaxAndSippingPage = () => {
     setValue,
     formState: { isSubmitting, errors },
   } = useForm<ICreateTaxAndSipping>({
-        defaultValues: {
+    defaultValues: {
       taxRate: 0,
-      shippingPrice: 0
+      shippingPrice: 0,
     },
   });
 
-
-      useEffect(() => {
-      if (taxAndSipping) {
-        setValue("taxRate", taxAndSipping.taxRate);
-        setValue("shippingPrice", taxAndSipping.shippingPrice);
-        refetch();
-      }
-    }, [refetch, setValue, taxAndSipping] );
+  useEffect(() => {
+    if (taxAndSipping) {
+      setValue("taxRate", taxAndSipping.taxRate);
+      setValue("shippingPrice", taxAndSipping.shippingPrice);
+      refetch();
+    }
+  }, [refetch, setValue, taxAndSipping]);
 
   const onSubmit = async (values: ICreateTaxAndSipping) => {
     try {
-          await updateTaxAndShipping({taxRate: +values.taxRate, shippingPrice : +values.shippingPrice}).unwrap();
+      await updateTaxAndShipping({
+        taxRate: +values.taxRate,
+        shippingPrice: +values.shippingPrice,
+      }).unwrap();
       router.refresh();
       toast.success("you have updated tax and shipping successfully");
       // reset();
-      setTimeout(() => {
-      }, 1000);
+      setTimeout(() => {}, 1000);
     } catch (error) {
       toast.error((error as { data: { message: string } })?.data?.message);
     }
-  }
-  if (isLoading){
-    return <Loading/>
+  };
+  if (isLoading) {
+    return <Loading />;
   }
   return (
     <Stack
@@ -95,33 +106,27 @@ const TaxAndSippingPage = () => {
           </IconButton>
         </Tooltip>
       </Typography>
-  
-          <Controller
-                  name="taxRate"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      type="number"
-                      label="Tax Rate"
-                      fullWidth
-                    />
-                  )}
-                />
 
-                        <Controller
-                  name="shippingPrice"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      type="number"
-                      label="shipping price"
-                      fullWidth
-                    />
-                  )}
-                />
+      <Controller
+        name="taxRate"
+        control={control}
+        render={({ field }) => (
+          <TextField {...field} type="number" label="Tax Rate" fullWidth />
+        )}
+      />
 
+      <Controller
+        name="shippingPrice"
+        control={control}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            type="number"
+            label="shipping price"
+            fullWidth
+          />
+        )}
+      />
 
       {/* <Button
         type="submit"
@@ -133,27 +138,24 @@ const TaxAndSippingPage = () => {
       Update category
       </Button> */}
 
-
-      
-      
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              disabled={isSubmitting}
-              sx={{ textTransform: "capitalize", position: "relative" }}
-            >
-              {isSubmitting ? (
-                <CircularProgress
-                  size={24}
-                  sx={{
-                    color: "white",
-                  }}
-                />
-              ) : (
-                "Update tax and shipping"
-              )}
-            </Button>
+      <Button
+        type="submit"
+        variant="contained"
+        fullWidth
+        disabled={isSubmitting}
+        sx={{ textTransform: "capitalize", position: "relative" }}
+      >
+        {isSubmitting ? (
+          <CircularProgress
+            size={24}
+            sx={{
+              color: "white",
+            }}
+          />
+        ) : (
+          "Update tax and shipping"
+        )}
+      </Button>
     </Stack>
   );
 };

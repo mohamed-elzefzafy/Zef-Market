@@ -1,4 +1,4 @@
-import { ICategory, ICategoryResponse } from "@/types/category";
+import { ICategory, ICategoryResponse } from "@/types/coupons";
 import { apiSlice } from "./apiSlice";
 
 export const paymentApiSlice = apiSlice.injectEndpoints({
@@ -93,4 +93,4 @@ export const paymentApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const {usePaymentPaybalMutation} = paymentApiSlice;
+export const { usePaymentPaybalMutation } = paymentApiSlice;

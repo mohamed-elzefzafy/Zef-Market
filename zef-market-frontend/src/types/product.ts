@@ -1,21 +1,21 @@
 import { CloudinaryObject } from "./auth";
 import { IBrand } from "./brand";
-import { ICategory } from "./category";
+import { ICategory } from "./coupons";
 import { ISubCategory } from "./subcategory";
 
 export interface IProduct {
   _id: string;
   title: string;
   images: CloudinaryObject[];
-  category: ICategory,
-  subCategory :ISubCategory,
-  brand :IBrand,
+  category: ICategory;
+  subCategory: ISubCategory;
+  brand: IBrand;
   description: string;
   rating: number;
   reviewsNumber: number;
   price: number;
   discount: number;
-  finalPrice : number;
+  finalPrice: number;
   stock: number;
   sold: number;
   // reviews: IReviewsResult[];
@@ -26,19 +26,14 @@ export interface IProduct {
 export interface IProductInput {
   title: string;
   // images: CloudinaryObject[];
-  category: string,
-  subCategory :string,
-  brand :string,
+  category: string;
+  subCategory: string;
+  brand: string;
   description: string;
   price: number;
   discount: number;
   stock: number;
 }
-
-
-
-
-
 
 export interface IProductResponse {
   products: IProduct[];

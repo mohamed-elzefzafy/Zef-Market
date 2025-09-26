@@ -10,6 +10,7 @@ import { SubCategoryService } from './subcategory/subcategory.service';
 import { BrandService } from './brand/brand.service';
 import { OrderService } from './order/order.service';
 import { BannerService } from './banner/banner.service';
+import { CouponService } from './coupon/coupon.service';
 
 @Controller()
 export class AppController {
@@ -22,6 +23,7 @@ export class AppController {
     private readonly reviewsService: ReviewsService,
     private readonly orderService: OrderService,
     private readonly bannerService: BannerService,
+    private readonly couponService: CouponService,
   ) {}
 
   @Get()
@@ -42,6 +44,7 @@ export class AppController {
     const reviewsCount = await this.reviewsService.getAdminReviewCount();
     const ordersCount = await this.orderService.getAdminOrdersCount();
     const bannersCount = await this.bannerService.getAdminBannersCount();
+    const couponsCount = await this.couponService.getAdmincouponsCount();
 
     return {
       productsCount,
@@ -52,6 +55,7 @@ export class AppController {
       reviewsCount,
       ordersCount,
       bannersCount,
+      couponsCount
     };
   }
 }

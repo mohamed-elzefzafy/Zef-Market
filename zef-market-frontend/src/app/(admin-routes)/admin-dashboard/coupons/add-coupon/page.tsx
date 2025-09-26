@@ -1,6 +1,5 @@
 "use client";
 import { useCreateCategoryMutation } from "@/redux/slices/api/categoryApiSlice";
-import { IAddCategory } from "@/types/coupons";
 import { KeyboardDoubleArrowRight } from "@mui/icons-material";
 import {
   Button,
@@ -11,50 +10,39 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { Box } from "@mui/system";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import ImageIcon from "@mui/icons-material/Image";
 import { ChangeEvent, useState } from "react";
+import { IAddCoupon } from "@/types/coupons";
+import { useCreateCouponMutation } from "@/redux/slices/api/couponsApiSlice";
 
-const AddCategoryAdminPage = () => {
+const AddCouponAdminPage = () => {
   const router = useRouter();
-  const [createCategory] = useCreateCategoryMutation();
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [createCoupon] = useCreateCouponMutation();
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { isSubmitting, errors },
-  } = useForm<IAddCategory>();
+  } = useForm<IAddCoupon>();
 
-  const onSubmit = async (values: IAddCategory) => {
+  const onSubmit = async (values: IAddCoupon) => {
     try {
-      const formData = new FormData();
-      formData.append("title", values.title);
+      await createCoupon({
+        name: values.name,
+        expireDate: values.expireDate,
+        discount: +values.discount,
+      }).unwrap();
 
-      if (imageFile) {
-        formData.append("image", imageFile);
-      }
-
-      await createCategory(formData).unwrap();
-
-      toast.success("you have created category successfully");
+      toast.success("you have created coupon successfully");
       reset();
       setTimeout(() => {
-        router.push(`/admin-dashboard/categories`);
+        router.push(`/admin-dashboard/coupons`);
       }, 1000);
     } catch (error) {
       toast.error((error as { data: { message: string } })?.data?.message);
-    }
-  };
-
-  const handleImageFile = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setImageFile(e.target.files[0]);
     }
   };
 
@@ -75,7 +63,7 @@ const AddCategoryAdminPage = () => {
       }}
     >
       <Typography variant="h6" component="h2" sx={{ ml: 2 }}>
-        Add category
+        Add coupon
         <Tooltip
           title={"back to Categories admin dashboard"}
           placement="right-end"
@@ -90,12 +78,32 @@ const AddCategoryAdminPage = () => {
       </Typography>
       <TextField
         type="text"
-        placeholder="title"
-        label="title"
+        placeholder="name"
+        label="name"
         sx={{ width: "100%" }}
-        {...register("title", { required: "title is required" })}
-        error={errors.title ? true : false}
-        helperText={errors.title && "title is required"}
+        {...register("name", { required: "name is required" })}
+        error={errors.name ? true : false}
+        helperText={errors.name && "name is required"}
+      />
+
+      <TextField
+        type="date"
+        placeholder="Expire Date"
+        label="Expire Date"
+        sx={{ width: "100%" }}
+        {...register("expireDate", { required: "Expire date is required" })}
+        error={errors.expireDate ? true : false}
+        helperText={errors.expireDate && "Expire date is required"}
+      />
+
+      <TextField
+        type="number"
+        placeholder="discount"
+        label="discount"
+        sx={{ width: "100%" }}
+        {...register("discount", { required: "discount is required" })}
+        error={errors.discount ? true : false}
+        helperText={errors.discount && "discount is required"}
       />
 
       {/* <Button
@@ -107,29 +115,6 @@ const AddCategoryAdminPage = () => {
       >
         Add category 
       </Button> */}
-
-      {imageFile && (
-        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-          <Image
-            src={URL.createObjectURL(imageFile)}
-            width={200}
-            height={200}
-            style={{ objectFit: "contain", borderRadius: "5px" }}
-            alt="profileImage"
-          />
-        </Box>
-      )}
-
-      <Button
-        component="label"
-        variant="outlined"
-        fullWidth
-        sx={{ textTransform: "capitalize" }}
-        startIcon={<ImageIcon />}
-      >
-        {imageFile ? "category image selected" : "Upload category image"}
-        <input type="file" hidden accept="image/*" onChange={handleImageFile} />
-      </Button>
 
       <Button
         type="submit"
@@ -146,11 +131,11 @@ const AddCategoryAdminPage = () => {
             }}
           />
         ) : (
-          "Add category "
+          "Add coupon "
         )}
       </Button>
     </Stack>
   );
 };
 
-export default AddCategoryAdminPage;
+export default AddCouponAdminPage;

@@ -7,6 +7,7 @@ import {
   Dashboard,
   Group,
   LocalLibrary,
+  Money,
   Note,
   PermMedia,
   Receipt,
@@ -48,6 +49,11 @@ const InstructorDashboardLayout = ({ children }: { children: ReactNode }) => {
       text: "Tax shipping",
       icon:<CurrencyExchange/>,
       path: "/admin-dashboard/taxAndSipping",
+    },
+        {
+      text: "Coupons",
+      icon:<Money/>,
+      path: "/admin-dashboard/coupons",
     },
   ];
 

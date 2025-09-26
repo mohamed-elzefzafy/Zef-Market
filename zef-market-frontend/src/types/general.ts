@@ -7,4 +7,5 @@ export interface IGetAdminCounts {
   reviewsCount: number;
   ordersCount: number;
   bannersCount: number;
+  couponsCount: number;
 }

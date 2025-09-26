@@ -4,7 +4,7 @@ import {
   useGetOneCategoryQuery,
   useUpdateCategoryMutation,
 } from "@/redux/slices/api/categoryApiSlice";
-import { IAddCategory } from "@/types/category";
+import { IAddCategory } from "@/types/coupons";
 import { KeyboardDoubleArrowRight } from "@mui/icons-material";
 import {
   Button,

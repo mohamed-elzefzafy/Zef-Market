@@ -1,6 +1,10 @@
 "use client";
-import { useCreateCategoryMutation, useGetOneCategoryQuery, useUpdateCategoryMutation } from "@/redux/slices/api/categoryApiSlice";
-import { IAddCategory } from "@/types/category";
+import {
+  useCreateCategoryMutation,
+  useGetOneCategoryQuery,
+  useUpdateCategoryMutation,
+} from "@/redux/slices/api/categoryApiSlice";
+import { IAddCategory } from "@/types/coupons";
 import { KeyboardDoubleArrowRight } from "@mui/icons-material";
 import {
   Button,
@@ -18,15 +22,18 @@ import { ChangeEvent, use, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import ImageIcon from "@mui/icons-material/Image";
-import { useGetOneBrandQuery, useUpdateBrandMutation } from "@/redux/slices/api/brandApiSlice";
+import {
+  useGetOneBrandQuery,
+  useUpdateBrandMutation,
+} from "@/redux/slices/api/brandApiSlice";
 import { IAddBrand } from "@/types/brand";
 
 const EditCategoryAdminPage = () => {
-    const router = useRouter();
-    const { brandId } = useParams<{ brandId: string }>();
-        const [imageFile, setImageFile] = useState<File | null>(null);
-    const {data : brand ,refetch} = useGetOneBrandQuery(brandId);
-    
+  const router = useRouter();
+  const { brandId } = useParams<{ brandId: string }>();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const { data: brand, refetch } = useGetOneBrandQuery(brandId);
+
   const [updateBrand] = useUpdateBrandMutation();
 
   const {
@@ -37,25 +44,23 @@ const EditCategoryAdminPage = () => {
     formState: { isSubmitting, errors },
   } = useForm<IAddBrand>();
 
-
-      useEffect(() => {
-      if (brand) {
-        setValue("title", brand.title);
-        refetch();
-      }
-    }, [brand, refetch, setValue] );
+  useEffect(() => {
+    if (brand) {
+      setValue("title", brand.title);
+      refetch();
+    }
+  }, [brand, refetch, setValue]);
 
   const onSubmit = async (values: IAddBrand) => {
-    
     try {
-                const formData = new FormData();
+      const formData = new FormData();
       formData.append("title", values.title);
 
       if (imageFile) {
         formData.append("image", imageFile);
       }
 
-          await updateBrand({
+      await updateBrand({
         payLoad: formData,
         brandId,
       }).unwrap();
@@ -69,11 +74,11 @@ const EditCategoryAdminPage = () => {
       toast.error((error as { data: { message: string } })?.data?.message);
     }
   };
-    const handleImageFile = (e: ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files?.[0]) {
-        setImageFile(e.target.files[0]);
-      }
-    };
+  const handleImageFile = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setImageFile(e.target.files[0]);
+    }
+  };
 
   return (
     <Stack
@@ -98,9 +103,7 @@ const EditCategoryAdminPage = () => {
           placement="right-end"
           enterDelay={200}
         >
-          <IconButton
-            onClick={() => router.push(`/admin-dashboard/brands`)}
-          >
+          <IconButton onClick={() => router.push(`/admin-dashboard/brands`)}>
             <KeyboardDoubleArrowRight sx={{ color: "primary.main" }} />
           </IconButton>
         </Tooltip>
@@ -126,63 +129,57 @@ const EditCategoryAdminPage = () => {
       Update category
       </Button> */}
 
-        {imageFile ? (
-              <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-                <Image
-                  src={URL.createObjectURL(imageFile)}
-                  width={200}
-                  height={200}
-                  style={{ objectFit: "contain", borderRadius: "5px" }}
-                  alt="categoryImage"
-                />
-              </Box>
-            ) :
-                brand?.image.url ?  <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-                <Image
-                  src={brand?.image.url }
-                  width={200}
-                  height={200}
-                  style={{ objectFit: "contain", borderRadius: "5px" }}
-                  alt="profileImage"
-                />
-              </Box> : null
-            
-            }
-      
-            <Button
-              component="label"
-              variant="outlined"
-              fullWidth
-              sx={{ textTransform: "capitalize" }}
-              startIcon={<ImageIcon />}
-            >
-              {imageFile ? "brand image selected" : "Upload brand image"}
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleImageFile}
-              />
-            </Button>
-      
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              disabled={isSubmitting}
-              sx={{ textTransform: "capitalize", position: "relative" }}
-            >
-              {isSubmitting ? (
-                <CircularProgress
-                  size={24}
-                  sx={{
-                    color: "white",
-                  }}
-                />
-              ) : (
-                "Update Brand"
-              )}
-            </Button>
+      {imageFile ? (
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+          <Image
+            src={URL.createObjectURL(imageFile)}
+            width={200}
+            height={200}
+            style={{ objectFit: "contain", borderRadius: "5px" }}
+            alt="categoryImage"
+          />
+        </Box>
+      ) : brand?.image.url ? (
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+          <Image
+            src={brand?.image.url}
+            width={200}
+            height={200}
+            style={{ objectFit: "contain", borderRadius: "5px" }}
+            alt="profileImage"
+          />
+        </Box>
+      ) : null}
+
+      <Button
+        component="label"
+        variant="outlined"
+        fullWidth
+        sx={{ textTransform: "capitalize" }}
+        startIcon={<ImageIcon />}
+      >
+        {imageFile ? "brand image selected" : "Upload brand image"}
+        <input type="file" hidden accept="image/*" onChange={handleImageFile} />
+      </Button>
+
+      <Button
+        type="submit"
+        variant="contained"
+        fullWidth
+        disabled={isSubmitting}
+        sx={{ textTransform: "capitalize", position: "relative" }}
+      >
+        {isSubmitting ? (
+          <CircularProgress
+            size={24}
+            sx={{
+              color: "white",
+            }}
+          />
+        ) : (
+          "Update Brand"
+        )}
+      </Button>
     </Stack>
   );
 };

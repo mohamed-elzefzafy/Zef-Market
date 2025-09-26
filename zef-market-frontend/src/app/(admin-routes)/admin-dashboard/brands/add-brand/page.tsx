@@ -1,6 +1,6 @@
 "use client";
 import { useCreateCategoryMutation } from "@/redux/slices/api/categoryApiSlice";
-import { IAddCategory } from "@/types/category";
+import { IAddCategory } from "@/types/coupons";
 import { KeyboardDoubleArrowRight } from "@mui/icons-material";
 import {
   Button,
@@ -21,11 +21,10 @@ import { ChangeEvent, useState } from "react";
 import { useCreateBrandMutation } from "@/redux/slices/api/brandApiSlice";
 import { IAddBrand } from "@/types/brand";
 
-
 const AddBrandAdminPage = () => {
   const router = useRouter();
   const [createBrand] = useCreateBrandMutation();
-    const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const {
     register,
@@ -35,9 +34,8 @@ const AddBrandAdminPage = () => {
   } = useForm<IAddBrand>();
 
   const onSubmit = async (values: IAddBrand) => {
-    
     try {
-            const formData = new FormData();
+      const formData = new FormData();
       formData.append("title", values.title);
 
       if (imageFile) {
@@ -56,11 +54,11 @@ const AddBrandAdminPage = () => {
     }
   };
 
-    const handleImageFile = (e: ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files?.[0]) {
-        setImageFile(e.target.files[0]);
-      }
-    };
+  const handleImageFile = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setImageFile(e.target.files[0]);
+    }
+  };
 
   return (
     <Stack
@@ -79,15 +77,13 @@ const AddBrandAdminPage = () => {
       }}
     >
       <Typography variant="h6" component="h2" sx={{ ml: 2 }}>
-      Add brand
+        Add brand
         <Tooltip
           title={"back to Categories admin dashboard"}
           placement="right-end"
           enterDelay={200}
         >
-          <IconButton
-            onClick={() => router.push(`/admin-dashboard/brands`)}
-          >
+          <IconButton onClick={() => router.push(`/admin-dashboard/brands`)}>
             <KeyboardDoubleArrowRight sx={{ color: "primary.main" }} />
           </IconButton>
         </Tooltip>
@@ -112,52 +108,47 @@ const AddBrandAdminPage = () => {
         Add category 
       </Button> */}
 
-            {imageFile && (
-              <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-                <Image
-                  src={URL.createObjectURL(imageFile)}
-                  width={200}
-                  height={200}
-                  style={{ objectFit: "contain", borderRadius: "5px" }}
-                  alt="profileImage"
-                />
-              </Box>
-            )}
-      
-            <Button
-              component="label"
-              variant="outlined"
-              fullWidth
-              sx={{ textTransform: "capitalize" }}
-              startIcon={<ImageIcon />}
-            >
-              {imageFile ? "category image selected" : "Upload category image"}
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleImageFile}
-              />
-            </Button>
-      
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              disabled={isSubmitting}
-              sx={{ textTransform: "capitalize", position: "relative" }}
-            >
-              {isSubmitting ? (
-                <CircularProgress
-                  size={24}
-                  sx={{
-                    color: "white",
-                  }}
-                />
-              ) : (
-                "Add category "
-              )}
-            </Button>
+      {imageFile && (
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+          <Image
+            src={URL.createObjectURL(imageFile)}
+            width={200}
+            height={200}
+            style={{ objectFit: "contain", borderRadius: "5px" }}
+            alt="profileImage"
+          />
+        </Box>
+      )}
+
+      <Button
+        component="label"
+        variant="outlined"
+        fullWidth
+        sx={{ textTransform: "capitalize" }}
+        startIcon={<ImageIcon />}
+      >
+        {imageFile ? "category image selected" : "Upload category image"}
+        <input type="file" hidden accept="image/*" onChange={handleImageFile} />
+      </Button>
+
+      <Button
+        type="submit"
+        variant="contained"
+        fullWidth
+        disabled={isSubmitting}
+        sx={{ textTransform: "capitalize", position: "relative" }}
+      >
+        {isSubmitting ? (
+          <CircularProgress
+            size={24}
+            sx={{
+              color: "white",
+            }}
+          />
+        ) : (
+          "Add category "
+        )}
+      </Button>
     </Stack>
   );
 };

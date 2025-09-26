@@ -191,4 +191,8 @@ async findSomeCouponsIds(couponsIds: string[]) {
   return cloneCoupons;
 }
 
+
+      getAdmincouponsCount() {
+    return this.couponModule.countDocuments();
+  }
 }

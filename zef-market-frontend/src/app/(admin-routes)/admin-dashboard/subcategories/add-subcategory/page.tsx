@@ -1,6 +1,9 @@
 "use client";
-import { useCreateCategoryMutation, useGetCategoriesQuery } from "@/redux/slices/api/categoryApiSlice";
-import { IAddCategory } from "@/types/category";
+import {
+  useCreateCategoryMutation,
+  useGetCategoriesQuery,
+} from "@/redux/slices/api/categoryApiSlice";
+import { IAddCategory } from "@/types/coupons";
 import { KeyboardDoubleArrowRight } from "@mui/icons-material";
 import {
   Button,
@@ -22,13 +25,12 @@ import { ChangeEvent, useState } from "react";
 import { IAddSubCategory } from "@/types/subcategory";
 import { useCreateSubCategoryMutation } from "@/redux/slices/api/subcategoryApiSlice";
 
-
 const AddSubCategoryAdminPage = () => {
   const router = useRouter();
-    const [category, setCategory] = useState("");
+  const [category, setCategory] = useState("");
   const [createSubCategory] = useCreateSubCategoryMutation();
-    const { data: categoriesResponse } = useGetCategoriesQuery();
-    const [imageFile, setImageFile] = useState<File | null>(null);
+  const { data: categoriesResponse } = useGetCategoriesQuery();
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const {
     register,
@@ -38,11 +40,10 @@ const AddSubCategoryAdminPage = () => {
   } = useForm<IAddSubCategory>();
 
   const onSubmit = async (values: IAddSubCategory) => {
-    
     try {
-            const formData = new FormData();
+      const formData = new FormData();
       formData.append("title", values.title);
-        formData.append("category", values.category);
+      formData.append("category", values.category);
 
       if (imageFile) {
         formData.append("image", imageFile);
@@ -60,11 +61,11 @@ const AddSubCategoryAdminPage = () => {
     }
   };
 
-    const handleImageFile = (e: ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files?.[0]) {
-        setImageFile(e.target.files[0]);
-      }
-    };
+  const handleImageFile = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setImageFile(e.target.files[0]);
+    }
+  };
 
   return (
     <Stack
@@ -83,7 +84,7 @@ const AddSubCategoryAdminPage = () => {
       }}
     >
       <Typography variant="h6" component="h2" sx={{ ml: 2 }}>
-      Add subcategory
+        Add subcategory
         <Tooltip
           title={"back to Categories admin dashboard"}
           placement="right-end"
@@ -107,30 +108,29 @@ const AddSubCategoryAdminPage = () => {
         helperText={errors.title && "title is required"}
       />
 
-          <TextField
-              select
-              label="Category"
-              fullWidth
-              defaultValue=""
-              {...register("category", { required: "Category is required" })}
-              error={!!errors.category}
-              helperText={errors.category && "Category is required"}
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-            >
-              {(categoriesResponse?.categories?.length ?? 0) > 0 ? (
-                categoriesResponse?.categories.map((category) => (
-                  <MenuItem key={category._id} value={category._id}>
-                    {category.title}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled value="">
-                  No categories available
-                </MenuItem>
-              )}
-            </TextField>
-      
+      <TextField
+        select
+        label="Category"
+        fullWidth
+        defaultValue=""
+        {...register("category", { required: "Category is required" })}
+        error={!!errors.category}
+        helperText={errors.category && "Category is required"}
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+      >
+        {(categoriesResponse?.categories?.length ?? 0) > 0 ? (
+          categoriesResponse?.categories.map((category) => (
+            <MenuItem key={category._id} value={category._id}>
+              {category.title}
+            </MenuItem>
+          ))
+        ) : (
+          <MenuItem disabled value="">
+            No categories available
+          </MenuItem>
+        )}
+      </TextField>
 
       {/* <Button
         type="submit"
@@ -142,52 +142,47 @@ const AddSubCategoryAdminPage = () => {
         Add category 
       </Button> */}
 
-            {imageFile && (
-              <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-                <Image
-                  src={URL.createObjectURL(imageFile)}
-                  width={200}
-                  height={200}
-                  style={{ objectFit: "contain", borderRadius: "5px" }}
-                  alt="profileImage"
-                />
-              </Box>
-            )}
-      
-            <Button
-              component="label"
-              variant="outlined"
-              fullWidth
-              sx={{ textTransform: "capitalize" }}
-              startIcon={<ImageIcon />}
-            >
-              {imageFile ? "category image selected" : "Upload category image"}
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleImageFile}
-              />
-            </Button>
-      
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              disabled={isSubmitting}
-              sx={{ textTransform: "capitalize", position: "relative" }}
-            >
-              {isSubmitting ? (
-                <CircularProgress
-                  size={24}
-                  sx={{
-                    color: "white",
-                  }}
-                />
-              ) : (
-                "Add category "
-              )}
-            </Button>
+      {imageFile && (
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+          <Image
+            src={URL.createObjectURL(imageFile)}
+            width={200}
+            height={200}
+            style={{ objectFit: "contain", borderRadius: "5px" }}
+            alt="profileImage"
+          />
+        </Box>
+      )}
+
+      <Button
+        component="label"
+        variant="outlined"
+        fullWidth
+        sx={{ textTransform: "capitalize" }}
+        startIcon={<ImageIcon />}
+      >
+        {imageFile ? "category image selected" : "Upload category image"}
+        <input type="file" hidden accept="image/*" onChange={handleImageFile} />
+      </Button>
+
+      <Button
+        type="submit"
+        variant="contained"
+        fullWidth
+        disabled={isSubmitting}
+        sx={{ textTransform: "capitalize", position: "relative" }}
+      >
+        {isSubmitting ? (
+          <CircularProgress
+            size={24}
+            sx={{
+              color: "white",
+            }}
+          />
+        ) : (
+          "Add category "
+        )}
+      </Button>
     </Stack>
   );
 };
