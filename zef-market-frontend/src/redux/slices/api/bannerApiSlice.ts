@@ -65,39 +65,6 @@ export const bannerApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    // deleteBannerAdminPage: builder.mutation<
-    //   void,
-    //   { _id: string; page?: number }
-    // >({
-    //   query: ({ _id }) => ({
-    //     url: `/api/v1/banner/${_id}`,
-    //     method: "DELETE",
-    //   }),
-    //   async onQueryStarted({ _id, page }, { dispatch, queryFulfilled }) {
-    //     const queryParams = `?page=${page}`;
-    //     const patchResult = dispatch(
-    //       bannerApiSlice.util.updateQueryData(
-    //         "getBannersAdmin",
-    //         queryParams,
-    //         (draft: IBannersResult) => {
-    //           draft = draft.filter(
-    //             (banner) => banner._id !== _id
-    //           );
-    //           draft.pagination.total -= 1;
-    //           if (draft.categories.length === 0 && page && page > 1) {
-    //             draft.pagination.page = page - 1;
-    //           }
-    //         }
-    //       )
-    //     );
-    //     try {
-    //       await queryFulfilled;
-    //     } catch {
-    //       patchResult.undo();
-    //     }
-    //   },
-    //   invalidatesTags: (result, error, { _id }) => [{ type: "Banners", _id }],
-    // }),
   }),
 });
 

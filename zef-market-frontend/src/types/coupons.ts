@@ -1,4 +1,3 @@
-import { CloudinaryObject } from "./auth";
 import { Pagination } from "./product";
 
 export interface ICouponsResponse {

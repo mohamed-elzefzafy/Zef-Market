@@ -16,7 +16,7 @@ import {
 import { Box } from "@mui/system";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { ChangeEvent, use, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import ImageIcon from "@mui/icons-material/Image";
@@ -25,7 +25,6 @@ import {
   useGetOneSubCategoryQuery,
   useUpdateSubCategoryMutation,
 } from "@/redux/slices/api/subcategoryApiSlice";
-import { is } from "zod/v4/locales";
 import Loading from "@/app/loading";
 
 const EditSubCategoryAdminPage = () => {

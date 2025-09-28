@@ -1,7 +1,5 @@
-import { EndpointBuilder } from "@reduxjs/toolkit/query";
 import { apiSlice } from "./apiSlice";
 import { IReview, IReviewResponse } from "@/types/review";
-import { IReviewInput } from "./wislistApiSlice";
 
 export interface IReviewsBody {
   comment: string;
