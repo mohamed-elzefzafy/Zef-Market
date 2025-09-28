@@ -24,6 +24,13 @@ async function bootstrap() {
   //   bodyParser.raw({ type: 'application/json' }),
   // );
 
+    app.enableCors({
+    origin: process.env.FRONTEND, 
+    credentials: true, // Allow cookies to be sent
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
   );
