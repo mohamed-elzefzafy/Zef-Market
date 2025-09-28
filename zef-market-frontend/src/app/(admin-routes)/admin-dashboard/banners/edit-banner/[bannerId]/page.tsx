@@ -1,10 +1,4 @@
 "use client";
-import {
-  useCreateCategoryMutation,
-  useGetOneCategoryQuery,
-  useUpdateCategoryMutation,
-} from "@/redux/slices/api/categoryApiSlice";
-import { IAddCategory } from "@/types/coupons";
 import { KeyboardDoubleArrowRight } from "@mui/icons-material";
 import {
   Button,
@@ -18,7 +12,7 @@ import {
 import { Box } from "@mui/system";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { ChangeEvent, use, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import ImageIcon from "@mui/icons-material/Image";
