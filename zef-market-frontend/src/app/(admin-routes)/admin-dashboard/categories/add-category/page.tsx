@@ -1,6 +1,5 @@
 "use client";
 import { useCreateCategoryMutation } from "@/redux/slices/api/categoryApiSlice";
-import { IAddCategory } from "@/types/coupons";
 import { KeyboardDoubleArrowRight } from "@mui/icons-material";
 import {
   Button,
@@ -18,6 +17,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import ImageIcon from "@mui/icons-material/Image";
 import { ChangeEvent, useState } from "react";
+import { IAddCategory } from "@/types/category";
 
 const AddCategoryAdminPage = () => {
   const router = useRouter();

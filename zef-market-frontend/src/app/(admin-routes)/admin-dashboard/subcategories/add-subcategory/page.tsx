@@ -1,9 +1,7 @@
 "use client";
 import {
-  useCreateCategoryMutation,
   useGetCategoriesQuery,
 } from "@/redux/slices/api/categoryApiSlice";
-import { IAddCategory } from "@/types/coupons";
 import { KeyboardDoubleArrowRight } from "@mui/icons-material";
 import {
   Button,

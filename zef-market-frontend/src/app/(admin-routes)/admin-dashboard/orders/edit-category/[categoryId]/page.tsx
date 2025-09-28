@@ -1,10 +1,8 @@
 "use client";
 import {
-  useCreateCategoryMutation,
   useGetOneCategoryQuery,
   useUpdateCategoryMutation,
 } from "@/redux/slices/api/categoryApiSlice";
-import { IAddCategory } from "@/types/coupons";
 import { KeyboardDoubleArrowRight } from "@mui/icons-material";
 import {
   Button,
@@ -22,6 +20,7 @@ import { ChangeEvent, use, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import ImageIcon from "@mui/icons-material/Image";
+import { IAddCategory } from "@/types/category";
 
 const EditCategoryAdminPage = ({
   params,

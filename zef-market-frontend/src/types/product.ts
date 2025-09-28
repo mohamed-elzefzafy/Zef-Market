@@ -1,6 +1,6 @@
 import { CloudinaryObject } from "./auth";
 import { IBrand } from "./brand";
-import { ICategory } from "./coupons";
+import { ICategory } from "./category";
 import { ISubCategory } from "./subcategory";
 
 export interface IProduct {
