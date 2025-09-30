@@ -1,4 +1,4 @@
-import { Inject, Module } from '@nestjs/common';
+import { forwardRef, Inject, Module } from '@nestjs/common';
 import { StripeController } from './stripe.controller';
 import { StripeService } from './stripe.service';
 import Stripe from 'stripe';
@@ -8,6 +8,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Order, OrderSchema } from 'src/order/entities/order.schema';
 import { CartModule } from 'src/cart/cart.module';
 import { ProductsModule } from 'src/products/products.module';
+import { OrderModule } from 'src/order/order.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ProductsModule } from 'src/products/products.module';
     JwtModule,
     CartModule,
     ProductsModule,
+    forwardRef(() => OrderModule),
   ],
   controllers: [StripeController],
   providers: [

@@ -34,19 +34,29 @@ export class StripeController {
 //   return this.stripeService.handleCheckoutWebhook(event);
 // }
 
-@Post('webhook')
-async  handleCheckoutWebhook(
-    @Headers('stripe-signature') sig,
-    @Req() request: RawBodyRequest<Request>,
-  ) {
-    const endpointSecret =
-      'whsec_9071797b87d9c3434023a7233b06d394676bb717df8b89a4364d7aaa235da50c';
+// @Post('webhook')
+// async  handleCheckoutWebhook(
+//     @Headers('stripe-signature') sig,
+//     @Req() request: RawBodyRequest<Request>,
+//   ) {
+//     const endpointSecret =
+//       'whsec_8Nz5rEpWl3j6c7ryFb6rkxuovsB5GYtL';
 
-    const payload = request.rawBody;
+//     const payload = request.rawBody;
 
-    // return this.orderService.updatePaidCard(payload, sig, endpointSecret);
-     return this.stripeService.handleCheckoutWebhook(request);
+//     // return this.orderService.updatePaidCard(payload, sig, endpointSecret);
+//      return this.stripeService.handleCheckoutWebhook(request);
     
+//   }
+
+  @Post('webhook')
+  // @UseGuards(JwtAuthGuard)
+  async handleCheckoutWebhook(
+    @Body() evevt: any,
+  ) {
+    return this.stripeService.handleCheckoutWebhook(evevt);
   }
 }
+
+
 

@@ -31,6 +31,7 @@ export class OrderService {
     private readonly productsService: ProductsService,
     private readonly couponService: CouponService,
     private readonly taxAndShippingService: TaxAndShippingService,
+      @Inject(forwardRef(() => StripeService))
     private readonly stripeService: StripeService,
     @Inject(forwardRef(() => PaypalService))
     private readonly paypalService: PaypalService,
@@ -1769,5 +1770,69 @@ export class OrderService {
 
   getAdminOrdersCount() {
     return this.orderModel.countDocuments();
+  }
+
+
+  async createOrderStripe( userId : string) {
+    const cart = await this.cartService.getOrderCart(userId);
+          const orderItems: OrderItem[] = [];
+
+      for (const item of cart.cartItems) {
+        const product = await this.productsService.findOne(
+          item.productId._id.toString(),
+        );
+
+        
+
+        let uploadedImage;
+        if (product.images?.[0]) {
+          uploadedImage = await this.cloudinaryService.uploadImageFromUrl(
+            product.images[0].url, // ✅ خُد الـ url بتاع الصورة المخزنة
+            'orderss',
+          );
+        }
+
+        orderItems.push({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price ?? 0,
+          finalPrice: item.finalPrice ?? 0,
+          productOrderTitle: product.title,
+          productOrderImage: uploadedImage
+            ? {
+                url: uploadedImage.secure_url,
+                public_id: uploadedImage.public_id,
+              }
+            : null,
+        });
+      }
+
+      const order = await this.orderModel.create({
+        user: new Types.ObjectId(userId),
+        orderItems,
+        totalOrderPrice:cart.totalPrice,
+        totalOrderPriceAfterDiscount:cart.totalPriceAfterDiscount,
+        discount:0,
+        tax :0,
+        shipping :0,
+        paymentMethodType: 'stripe',
+      });
+
+      // خصم من المخزون
+      for (const item of cart.cartItems) {
+        await this.productsService.updateProductForOrder(
+          item.productId._id.toString(),
+          item.quantity,
+        );
+      }
+
+      // امسح الكارت
+      cart.cartItems = [];
+      cart.totalPrice = 0;
+      cart.totalPriceAfterDiscount = 0;
+      cart.coupons = [];
+      await cart.save();
+
+      return order;
   }
 }
