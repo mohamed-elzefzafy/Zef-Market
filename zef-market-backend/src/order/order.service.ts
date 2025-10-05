@@ -31,7 +31,7 @@ export class OrderService {
     private readonly productsService: ProductsService,
     private readonly couponService: CouponService,
     private readonly taxAndShippingService: TaxAndShippingService,
-      @Inject(forwardRef(() => StripeService))
+    @Inject(forwardRef(() => StripeService))
     private readonly stripeService: StripeService,
     @Inject(forwardRef(() => PaypalService))
     private readonly paypalService: PaypalService,
@@ -1424,7 +1424,7 @@ export class OrderService {
   //   throw new BadRequestException('Invalid payment method type');
   // }
 
-    async createOrder(createOrderDto: CreateOrderDto, userId: string) {
+  async createOrder(createOrderDto: CreateOrderDto, userId: string) {
     const cart = await this.cartService.getOrderCart(userId);
 
     if (cart.cartItems.length === 0) {
@@ -1479,11 +1479,46 @@ export class OrderService {
       totalOrderPrice - discount - (tax * totalOrderPrice) / 100 - shipping;
     // ⬇️ لو كاش → أنشئ الأوردر فوراً
     if (createOrderDto.paymentMethodType === 'cash') {
-return this.createOrderDependOnPaymentMethod(userId,createOrderDto.paymentMethodType)
+      return this.createOrderDependOnPaymentMethod(
+        userId,
+        createOrderDto.paymentMethodType,
+      );
     }
 
     // ⬇️ لو كارد → روح اعمل checkout session في Stripe
+    // if (createOrderDto.paymentMethodType === 'stripe') {
+    //   return this.stripeService.createOrderCheckoutSession(
+    //     cart,
+    //     userId,
+    //     totalOrderPrice,
+    //     totalOrderPriceAfterDiscount,
+    //     discount,
+    //     tax,
+    //     shipping,
+    //   );
+
+    // }
+
     if (createOrderDto.paymentMethodType === 'stripe') {
+      // ⬇️ أنشئ order مبدأي بدون دفع
+      const order = await this.orderModel.create({
+        user: new Types.ObjectId(userId),
+        orderItems: cart.cartItems.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price,
+          finalPrice: item.finalPrice,
+        })),
+        totalOrderPrice,
+        totalOrderPriceAfterDiscount,
+        discount,
+        tax,
+        shipping,
+        paymentMethodType: 'stripe',
+        isPaid: false,
+      });
+
+      // ⬇️ ابعت الـ order._id للـ checkout session
       return this.stripeService.createOrderCheckoutSession(
         cart,
         userId,
@@ -1492,8 +1527,8 @@ return this.createOrderDependOnPaymentMethod(userId,createOrderDto.paymentMethod
         discount,
         tax,
         shipping,
+        order._id.toString(), // 👈 أضفنا الـ orderId هنا
       );
-    
     }
 
     // 🔵 PayPal
@@ -1528,7 +1563,6 @@ return this.createOrderDependOnPaymentMethod(userId,createOrderDto.paymentMethod
 
     throw new BadRequestException('Invalid payment method type');
   }
-
 
   async updateOrder(
     id: string,
@@ -1878,9 +1912,12 @@ return this.createOrderDependOnPaymentMethod(userId,createOrderDto.paymentMethod
     return this.orderModel.countDocuments();
   }
 
-
-  async createOrderDependOnPaymentMethod( userId : string,paymentIntentMethod:string) {
-        const cart = await this.cartService.getOrderCart(userId);
+  async createOrderDependOnPaymentMethod(
+    userId: string,
+    paymentIntentMethod: string,
+    orderId: string = '',
+  ) {
+    const cart = await this.cartService.getOrderCart(userId);
 
     if (cart.cartItems.length === 0) {
       throw new BadRequestException('Cart is empty');
@@ -1932,38 +1969,39 @@ return this.createOrderDependOnPaymentMethod(userId,createOrderDto.paymentMethod
 
     const totalOrderPriceAfterDiscount =
       totalOrderPrice - discount - (tax * totalOrderPrice) / 100 - shipping;
-      
-            const orderItems: OrderItem[] = [];
 
-      for (const item of cart.cartItems) {
-        const product = await this.productsService.findOne(
-          item.productId._id.toString(),
+    const orderItems: OrderItem[] = [];
+
+    for (const item of cart.cartItems) {
+      const product = await this.productsService.findOne(
+        item.productId._id.toString(),
+      );
+
+      let uploadedImage;
+      if (product.images?.[0]) {
+        uploadedImage = await this.cloudinaryService.uploadImageFromUrl(
+          product.images[0].url, // ✅ خُد الـ url بتاع الصورة المخزنة
+          'orderss',
         );
-
-        let uploadedImage;
-        if (product.images?.[0]) {
-          uploadedImage = await this.cloudinaryService.uploadImageFromUrl(
-            product.images[0].url, // ✅ خُد الـ url بتاع الصورة المخزنة
-            'orderss',
-          );
-        }
-
-        orderItems.push({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.price ?? 0,
-          finalPrice: item.finalPrice ?? 0,
-          productOrderTitle: product.title,
-          productOrderImage: uploadedImage
-            ? {
-                url: uploadedImage.secure_url,
-                public_id: uploadedImage.public_id,
-              }
-            : null,
-        });
       }
 
-      const order = await this.orderModel.create({
+      orderItems.push({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price ?? 0,
+        finalPrice: item.finalPrice ?? 0,
+        productOrderTitle: product.title,
+        productOrderImage: uploadedImage
+          ? {
+              url: uploadedImage.secure_url,
+              public_id: uploadedImage.public_id,
+            }
+          : null,
+      });
+    }
+    let order: any;
+    if (orderId === '') {
+      order = await this.orderModel.create({
         user: new Types.ObjectId(userId),
         orderItems,
         totalOrderPrice,
@@ -1971,24 +2009,42 @@ return this.createOrderDependOnPaymentMethod(userId,createOrderDto.paymentMethod
         discount,
         tax,
         shipping,
-        paymentMethodType:paymentIntentMethod,
+        paymentMethodType: paymentIntentMethod,
+        isPaid: paymentIntentMethod === 'cash' ? false : true,
+        paidAt: paymentIntentMethod === 'cash' ? null : new Date(),
       });
+    } else {
+      order = await this.orderModel.findByIdAndUpdate(
+        orderId,
+        {
+          user: new Types.ObjectId(userId),
+          orderItems,
+          totalOrderPrice,
+          totalOrderPriceAfterDiscount,
+          discount,
+          tax,
+          shipping,
+          paymentMethodType: paymentIntentMethod,
+        },
+        { new: true },
+      );
+    }
 
-      // خصم من المخزون
-      for (const item of cart.cartItems) {
-        await this.productsService.updateProductForOrder(
-          item.productId._id.toString(),
-          item.quantity,
-        );
-      }
+    // خصم من المخزون
+    for (const item of cart.cartItems) {
+      await this.productsService.updateProductForOrder(
+        item.productId._id.toString(),
+        item.quantity,
+      );
+    }
 
-      // امسح الكارت
-      cart.cartItems = [];
-      cart.totalPrice = 0;
-      cart.totalPriceAfterDiscount = 0;
-      cart.coupons = [];
-      await cart.save();
+    // امسح الكارت
+    cart.cartItems = [];
+    cart.totalPrice = 0;
+    cart.totalPriceAfterDiscount = 0;
+    cart.coupons = [];
+    await cart.save();
 
-      return order;
+    return order;
   }
 }

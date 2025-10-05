@@ -25,99 +25,42 @@ export class StripeService {
     @Inject(forwardRef(() => OrderService))
     private readonly orderService: OrderService,
     @InjectModel(Order.name) private readonly orderModel: Model<Order>,
-    // private readonly orderService: OrderService,
   ) {}
-  //   public async createSession(courseId: string, userId: string) {
-  //     const course = await this.courseService.findOneWithoutpopulate(courseId);
-
-  // // if (course.isFree) {
-  // // if (!course.users.includes(userId)) {
-  // //   course.users.push(userId);
-  // //   await course.save();
-  // //   return {message :`you have subscribed to ${course.title} cousre`}
-  // // } else {
-  // //     return {message :`you already subscribed to ${course.title} cousre`}
-  // // }
-  // // }
-  //     return this.stripe.checkout.sessions.create({
-  //       metadata: {
-  //         courseId,
-  //         userId,
-  //       },
-  //       line_items: [
-  //         {
-  //           price_data: {
-  //             currency: 'usd',
-  //             unit_amount: course.finalPrice * 100,
-  //             product_data: {
-  //               name: course.title,
-  //               description: course.description,
-  //               images: [course.thumbnail.url],
-  //             },
-  //           },
-  //           quantity: 1,
+  // async createOrderCheckoutSession(
+  //   cart: any,
+  //   userId: string,
+  //   totalOrderPrice: number,
+  //   totalOrderPriceAfterDiscount: number,
+  //   discount: number,
+  //   tax: number,
+  //   shipping: number,
+  // ) {
+  //   return this.stripe.checkout.sessions.create({
+  //     metadata: {
+  //       userId,
+  //       cartId: cart._id.toString(),
+  //       totalOrderPrice: totalOrderPrice.toString(),
+  //       totalOrderPriceAfterDiscount: totalOrderPriceAfterDiscount.toString(),
+  //       discount: discount.toString(),
+  //       tax: tax.toString(),
+  //       shipping: shipping.toString(),
+  //     },
+  //     line_items: cart.cartItems.map((item) => ({
+  //       price_data: {
+  //         currency: 'usd',
+  //         unit_amount: Number(item.finalPrice) * 100,
+  //         product_data: {
+  //           name: item.productId.title,
+  //           description: item.productId.description,
   //         },
-  //       ],
-  //       mode: 'payment',
-  //       success_url: `${this.configService.getOrThrow('STRIPE_SUCCESS_URL')}/course/${courseId}`,
-  //       cancel_url:   this.configService.getOrThrow('STRIPE_CANCEL_URL'),
-  //     });
-  //   }
-  // async handleCheckoutWebhook(event: any) {
-  //   console.log(event);
-
-  //   if (event.type !== 'checkout.session.completed') return;
-
-  //   const session = await this.stripe.checkout.sessions.retrieve(
-  //     event.data.object.id
-  //   );
-
-  //   const metadata = session.metadata;
-
-  //   if (!metadata || !metadata.courseId || !metadata.userId) {
-  //     throw new NotFoundException("Missing session metadata (courseId/userId)");
-  //   }
-  // console.log("ggggggggggggggggggggggg");
-
-  //   // ✅ مرر userId مباشرة
-  //   // await this.courseService.updateCheckOut(metadata.courseId, metadata.userId );
+  //       },
+  //       quantity: item.quantity,
+  //     })),
+  //     mode: 'payment',
+  //     success_url: this.configService.getOrThrow('STRIPE_SUCCESS_URL'),
+  //     cancel_url: this.configService.getOrThrow('STRIPE_CANCEL_URL'),
+  //   });
   // }
-
-  async createOrderCheckoutSession(
-    cart: any,
-    userId: string,
-    totalOrderPrice: number,
-    totalOrderPriceAfterDiscount: number,
-    discount: number,
-    tax: number,
-    shipping: number,
-  ) {
-    return this.stripe.checkout.sessions.create({
-      metadata: {
-        userId,
-        cartId: cart._id.toString(),
-        totalOrderPrice: totalOrderPrice.toString(),
-        totalOrderPriceAfterDiscount: totalOrderPriceAfterDiscount.toString(),
-        discount: discount.toString(),
-        tax: tax.toString(),
-        shipping: shipping.toString(),
-      },
-      line_items: cart.cartItems.map((item) => ({
-        price_data: {
-          currency: 'usd',
-          unit_amount: Number(item.finalPrice) * 100,
-          product_data: {
-            name: item.productId.title,
-            description: item.productId.description,
-          },
-        },
-        quantity: item.quantity,
-      })),
-      mode: 'payment',
-      success_url: this.configService.getOrThrow('STRIPE_SUCCESS_URL'),
-      cancel_url: this.configService.getOrThrow('STRIPE_CANCEL_URL'),
-    });
-  }
 
   // async handleCheckoutWebhook(event: any) {
   //   if (event.type !== 'checkout.session.completed') return;
@@ -170,6 +113,46 @@ export class StripeService {
   //   return order;
   // }
 
+  async createOrderCheckoutSession(
+  cart: any,
+  userId: string,
+  totalOrderPrice: number,
+  totalOrderPriceAfterDiscount: number,
+  discount: number,
+  tax: number,
+  shipping: number,
+  orderId: string, // 👈 استقبلنا orderId
+) {
+  return this.stripe.checkout.sessions.create({
+    metadata: {
+      userId,
+      orderId, // 👈 خزّنه فى metadata برضه لو حبيت تستخدمه فى الـ webhook
+      cartId: cart._id.toString(),
+      totalOrderPrice: totalOrderPrice.toString(),
+      totalOrderPriceAfterDiscount: totalOrderPriceAfterDiscount.toString(),
+      discount: discount.toString(),
+      tax: tax.toString(),
+      shipping: shipping.toString(),
+    },
+    line_items: cart.cartItems.map((item) => ({
+      price_data: {
+        currency: 'usd',
+        unit_amount: Number(item.finalPrice) * 100,
+        product_data: {
+          name: item.productId.title,
+          description: item.productId.description,
+        },
+      },
+      quantity: item.quantity,
+    })),
+    mode: 'payment',
+    // 👇 أضف الـ orderId فى URL
+    success_url: `${this.configService.getOrThrow('STRIPE_SUCCESS_URL')}?orderId=${orderId}`,
+    cancel_url: this.configService.getOrThrow('STRIPE_CANCEL_URL'),
+  });
+}
+
+
   async handleCheckoutWebhook(event: any) {
     console.log(event);
 
@@ -179,14 +162,11 @@ export class StripeService {
       event.data.object.id,
     );
 
-    const metadata = session.metadata;
+      const metadata = session.metadata;
+  if (!metadata || !metadata?.userId || !metadata?.orderId) {
+    throw new NotFoundException('Missing session metadata (userId or orderId)');
+  }
 
-    if (!metadata || !metadata.userId) {
-      throw new NotFoundException('Missing session metadata (userId)');
-    }
-    console.log('ggggggggggggggggggggggg');
-
-    // ✅ مرر userId مباشرة
-    await this.orderService.createOrderDependOnPaymentMethod(metadata.userId,"stripe");
+    await this.orderService.createOrderDependOnPaymentMethod(metadata.userId,"stripe",metadata.orderId);
   }
 }
