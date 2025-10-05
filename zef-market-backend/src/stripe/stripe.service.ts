@@ -187,6 +187,6 @@ export class StripeService {
     console.log('ggggggggggggggggggggggg');
 
     // ✅ مرر userId مباشرة
-    await this.orderService.createOrderStripe(metadata.userId);
+    await this.orderService.createOrderDependOnPaymentMethod(metadata.userId,"stripe");
   }
 }

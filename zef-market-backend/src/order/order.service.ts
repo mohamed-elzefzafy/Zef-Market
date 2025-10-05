@@ -1263,7 +1263,168 @@ export class OrderService {
   //   throw new BadRequestException('Invalid payment method type');
   // }
 
-  async createOrder(createOrderDto: CreateOrderDto, userId: string) {
+  // async createOrder(createOrderDto: CreateOrderDto, userId: string) {
+  //   const cart = await this.cartService.getOrderCart(userId);
+
+  //   if (cart.cartItems.length === 0) {
+  //     throw new BadRequestException('Cart is empty');
+  //   }
+
+  //   let totalOrderPrice = 0;
+
+  //   for (const item of cart.cartItems) {
+  //     const product = await this.productsService.checkProductsForOrder(
+  //       item.productId._id.toString(),
+  //       item.quantity,
+  //     );
+
+  //     if (!product) {
+  //       throw new BadRequestException(
+  //         `Product with id ${item.productId._id} no longer exists`,
+  //       );
+  //     }
+
+  //     if (product.price !== item.price) {
+  //       throw new BadRequestException(
+  //         `Price changed for product ${product.title}`,
+  //       );
+  //     }
+
+  //     if (product.stock < item.quantity) {
+  //       throw new BadRequestException(
+  //         `Not enough stock for product ${product.title}`,
+  //       );
+  //     }
+
+  //     totalOrderPrice += Number(item.finalPrice) * Number(item.quantity);
+  //   }
+
+  //   // حساب الخصومات + الضريبة + الشحن
+  //   let discount = 0;
+  //   if (cart.coupons?.length > 0) {
+  //     for (const c of cart.coupons) {
+  //       const coupon = await this.couponService.findOneById(c._id.toString());
+  //       if (coupon?.discount) {
+  //         discount += coupon.discount;
+  //       }
+  //     }
+  //   }
+
+  //   const taxAndShipping = await this.taxAndShippingService.findAll();
+  //   const tax = taxAndShipping?.taxRate ?? 0;
+  //   const shipping = taxAndShipping?.shippingPrice ?? 0;
+
+  //   const totalOrderPriceAfterDiscount =
+  //     totalOrderPrice - discount - (tax * totalOrderPrice) / 100 - shipping;
+
+  //   // ⬇️ لو كاش → أنشئ الأوردر فوراً
+  //   if (createOrderDto.paymentMethodType === 'cash') {
+  //     const orderItems: OrderItem[] = [];
+
+  //     for (const item of cart.cartItems) {
+  //       const product = await this.productsService.findOne(
+  //         item.productId._id.toString(),
+  //       );
+
+  //       let uploadedImage;
+  //       if (product.images?.[0]) {
+  //         uploadedImage = await this.cloudinaryService.uploadImageFromUrl(
+  //           product.images[0].url, // ✅ خُد الـ url بتاع الصورة المخزنة
+  //           'orderss',
+  //         );
+  //       }
+
+  //       orderItems.push({
+  //         productId: item.productId,
+  //         quantity: item.quantity,
+  //         price: item.price ?? 0,
+  //         finalPrice: item.finalPrice ?? 0,
+  //         productOrderTitle: product.title,
+  //         productOrderImage: uploadedImage
+  //           ? {
+  //               url: uploadedImage.secure_url,
+  //               public_id: uploadedImage.public_id,
+  //             }
+  //           : null,
+  //       });
+  //     }
+
+  //     const order = await this.orderModel.create({
+  //       user: new Types.ObjectId(userId),
+  //       orderItems,
+  //       totalOrderPrice,
+  //       totalOrderPriceAfterDiscount,
+  //       discount,
+  //       tax,
+  //       shipping,
+  //       paymentMethodType: 'cash',
+  //     });
+
+  //     // خصم من المخزون
+  //     for (const item of cart.cartItems) {
+  //       await this.productsService.updateProductForOrder(
+  //         item.productId._id.toString(),
+  //         item.quantity,
+  //       );
+  //     }
+
+  //     // امسح الكارت
+  //     cart.cartItems = [];
+  //     cart.totalPrice = 0;
+  //     cart.totalPriceAfterDiscount = 0;
+  //     cart.coupons = [];
+  //     await cart.save();
+
+  //     return order;
+  //   }
+
+  //   // ⬇️ لو كارد → روح اعمل checkout session في Stripe
+  //   if (createOrderDto.paymentMethodType === 'stripe') {
+  //     return this.stripeService.createOrderCheckoutSession(
+  //       cart,
+  //       userId,
+  //       totalOrderPrice,
+  //       totalOrderPriceAfterDiscount,
+  //       discount,
+  //       tax,
+  //       shipping,
+  //     );
+  //   }
+
+  //   // 🔵 PayPal
+  //   if (createOrderDto.paymentMethodType === 'paypal') {
+  //     const paypalOrder = await this.paypalService.createOrderCheckoutSession({
+  //       cart,
+  //       userId,
+  //       totalOrderPrice,
+  //       totalOrderPriceAfterDiscount,
+  //       discount,
+  //       tax,
+  //       shipping,
+  //     });
+
+  //     return {
+  //       redirectUrl: paypalOrder.redirectUrl,
+  //       orderId: paypalOrder.orderId,
+  //     };
+  //   }
+
+  //   // 🟣 Paymob
+  //   if (createOrderDto.paymentMethodType === 'paymob') {
+  //     const paymobOrder =
+  //       await this.paymobService.createOrderCheckoutSession(totalOrderPrice);
+
+  //     return {
+  //       _id: paymobOrder.orderId,
+  //       url: paymobOrder.iframeUrl,
+  //       paymentMethodType: 'paymob',
+  //     };
+  //   }
+
+  //   throw new BadRequestException('Invalid payment method type');
+  // }
+
+    async createOrder(createOrderDto: CreateOrderDto, userId: string) {
     const cart = await this.cartService.getOrderCart(userId);
 
     if (cart.cartItems.length === 0) {
@@ -1316,66 +1477,9 @@ export class OrderService {
 
     const totalOrderPriceAfterDiscount =
       totalOrderPrice - discount - (tax * totalOrderPrice) / 100 - shipping;
-
     // ⬇️ لو كاش → أنشئ الأوردر فوراً
     if (createOrderDto.paymentMethodType === 'cash') {
-      const orderItems: OrderItem[] = [];
-
-      for (const item of cart.cartItems) {
-        const product = await this.productsService.findOne(
-          item.productId._id.toString(),
-        );
-
-        let uploadedImage;
-        if (product.images?.[0]) {
-          uploadedImage = await this.cloudinaryService.uploadImageFromUrl(
-            product.images[0].url, // ✅ خُد الـ url بتاع الصورة المخزنة
-            'orderss',
-          );
-        }
-
-        orderItems.push({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.price ?? 0,
-          finalPrice: item.finalPrice ?? 0,
-          productOrderTitle: product.title,
-          productOrderImage: uploadedImage
-            ? {
-                url: uploadedImage.secure_url,
-                public_id: uploadedImage.public_id,
-              }
-            : null,
-        });
-      }
-
-      const order = await this.orderModel.create({
-        user: new Types.ObjectId(userId),
-        orderItems,
-        totalOrderPrice,
-        totalOrderPriceAfterDiscount,
-        discount,
-        tax,
-        shipping,
-        paymentMethodType: 'cash',
-      });
-
-      // خصم من المخزون
-      for (const item of cart.cartItems) {
-        await this.productsService.updateProductForOrder(
-          item.productId._id.toString(),
-          item.quantity,
-        );
-      }
-
-      // امسح الكارت
-      cart.cartItems = [];
-      cart.totalPrice = 0;
-      cart.totalPriceAfterDiscount = 0;
-      cart.coupons = [];
-      await cart.save();
-
-      return order;
+await this.createOrderDependOnPaymentMethod(userId,"cash")
     }
 
     // ⬇️ لو كارد → روح اعمل checkout session في Stripe
@@ -1389,6 +1493,7 @@ export class OrderService {
         tax,
         shipping,
       );
+    
     }
 
     // 🔵 PayPal
@@ -1423,6 +1528,7 @@ export class OrderService {
 
     throw new BadRequestException('Invalid payment method type');
   }
+
 
   async updateOrder(
     id: string,
@@ -1773,16 +1879,66 @@ export class OrderService {
   }
 
 
-  async createOrderStripe( userId : string) {
-    const cart = await this.cartService.getOrderCart(userId);
-          const orderItems: OrderItem[] = [];
+  async createOrderDependOnPaymentMethod( userId : string,paymentIntentMethod:string) {
+        const cart = await this.cartService.getOrderCart(userId);
+
+    if (cart.cartItems.length === 0) {
+      throw new BadRequestException('Cart is empty');
+    }
+
+    let totalOrderPrice = 0;
+
+    for (const item of cart.cartItems) {
+      const product = await this.productsService.checkProductsForOrder(
+        item.productId._id.toString(),
+        item.quantity,
+      );
+
+      if (!product) {
+        throw new BadRequestException(
+          `Product with id ${item.productId._id} no longer exists`,
+        );
+      }
+
+      if (product.price !== item.price) {
+        throw new BadRequestException(
+          `Price changed for product ${product.title}`,
+        );
+      }
+
+      if (product.stock < item.quantity) {
+        throw new BadRequestException(
+          `Not enough stock for product ${product.title}`,
+        );
+      }
+
+      totalOrderPrice += Number(item.finalPrice) * Number(item.quantity);
+    }
+
+    // حساب الخصومات + الضريبة + الشحن
+    let discount = 0;
+    if (cart.coupons?.length > 0) {
+      for (const c of cart.coupons) {
+        const coupon = await this.couponService.findOneById(c._id.toString());
+        if (coupon?.discount) {
+          discount += coupon.discount;
+        }
+      }
+    }
+
+    const taxAndShipping = await this.taxAndShippingService.findAll();
+    const tax = taxAndShipping?.taxRate ?? 0;
+    const shipping = taxAndShipping?.shippingPrice ?? 0;
+
+    const totalOrderPriceAfterDiscount =
+      totalOrderPrice - discount - (tax * totalOrderPrice) / 100 - shipping;
+      
+            const orderItems: OrderItem[] = [];
 
       for (const item of cart.cartItems) {
         const product = await this.productsService.findOne(
           item.productId._id.toString(),
         );
-
-        
 
         let uploadedImage;
         if (product.images?.[0]) {
@@ -1810,12 +1966,12 @@ export class OrderService {
       const order = await this.orderModel.create({
         user: new Types.ObjectId(userId),
         orderItems,
-        totalOrderPrice:cart.totalPrice,
-        totalOrderPriceAfterDiscount:cart.totalPriceAfterDiscount,
-        discount:0,
-        tax :0,
-        shipping :0,
-        paymentMethodType: 'stripe',
+        totalOrderPrice,
+        totalOrderPriceAfterDiscount,
+        discount,
+        tax,
+        shipping,
+        paymentMethodType:paymentIntentMethod,
       });
 
       // خصم من المخزون
