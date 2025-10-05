@@ -1504,11 +1504,11 @@ export class OrderService {
       const order = await this.orderModel.create({
         user: new Types.ObjectId(userId),
         orderItems: [],
-        totalOrderPrice:0,
-        totalOrderPriceAfterDiscount:0,
-        discount:0,
-        tax:0,
-        shipping:0,
+        totalOrderPrice: 0,
+        totalOrderPriceAfterDiscount: 0,
+        discount: 0,
+        tax: 0,
+        shipping: 0,
         paymentMethodType: 'stripe',
         isPaid: false,
       });
@@ -1909,7 +1909,7 @@ export class OrderService {
 
   async createOrderDependOnPaymentMethod(
     userId: string,
-    paymentIntentMethod: string,
+    paymentMethod: string,
     orderId: string = '',
   ) {
     const cart = await this.cartService.getOrderCart(userId);
@@ -2004,9 +2004,9 @@ export class OrderService {
         discount,
         tax,
         shipping,
-        paymentMethodType: paymentIntentMethod,
-        isPaid: paymentIntentMethod === 'cash' ? false : true,
-        paidAt: paymentIntentMethod === 'cash' ? null : new Date(),
+        paymentMethodType: paymentMethod,
+        isPaid: paymentMethod === 'cash' ? false : true,
+        paidAt: paymentMethod === 'cash' ? null : new Date(),
       });
     } else {
       order = await this.orderModel.findByIdAndUpdate(
@@ -2019,7 +2019,9 @@ export class OrderService {
           discount,
           tax,
           shipping,
-          paymentMethodType: paymentIntentMethod,
+          paymentMethodType: paymentMethod,
+          isPaid: paymentMethod === 'cash' ? false : true,
+          paidAt: paymentMethod === 'cash' ? null : new Date(),
         },
         { new: true },
       );
