@@ -141,6 +141,7 @@ export class StripeService {
         product_data: {
           name: item.productId.title,
           description: item.productId.description,
+            images: [item.productId.images[0].url],
         },
       },
       quantity: item.quantity,
