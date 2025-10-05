@@ -1479,7 +1479,7 @@ export class OrderService {
       totalOrderPrice - discount - (tax * totalOrderPrice) / 100 - shipping;
     // ⬇️ لو كاش → أنشئ الأوردر فوراً
     if (createOrderDto.paymentMethodType === 'cash') {
-await this.createOrderDependOnPaymentMethod(userId,"cash")
+return this.createOrderDependOnPaymentMethod(userId,createOrderDto.paymentMethodType)
     }
 
     // ⬇️ لو كارد → روح اعمل checkout session في Stripe
