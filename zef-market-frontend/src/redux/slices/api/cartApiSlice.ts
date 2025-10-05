@@ -22,6 +22,9 @@ export const cartApiSlice = apiSlice.injectEndpoints({
     getCurrentUserCart: builder.query<ICart, void>({
       query: () => ({
         url: `/api/v1/cart/current-user-cart`,
+            headers: {
+          "Cache-Control": "no-store",
+        },
       }),
       keepUnusedDataFor: 5,
       providesTags: ["Cart"],

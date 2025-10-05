@@ -147,7 +147,7 @@ export class StripeService {
     })),
     mode: 'payment',
     // 👇 أضف الـ orderId فى URL
-    success_url: `${this.configService.getOrThrow('STRIPE_SUCCESS_URL')}?orderId=${orderId}`,
+    success_url: `${this.configService.getOrThrow('STRIPE_SUCCESS_URL')}/orders/${orderId}`,
     cancel_url: this.configService.getOrThrow('STRIPE_CANCEL_URL'),
   });
 }

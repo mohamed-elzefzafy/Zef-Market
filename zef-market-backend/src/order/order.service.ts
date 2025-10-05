@@ -1503,17 +1503,12 @@ export class OrderService {
       // ⬇️ أنشئ order مبدأي بدون دفع
       const order = await this.orderModel.create({
         user: new Types.ObjectId(userId),
-        orderItems: cart.cartItems.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.price,
-          finalPrice: item.finalPrice,
-        })),
-        totalOrderPrice,
-        totalOrderPriceAfterDiscount,
-        discount,
-        tax,
-        shipping,
+        orderItems: [],
+        totalOrderPrice:0,
+        totalOrderPriceAfterDiscount:0,
+        discount:0,
+        tax:0,
+        shipping:0,
         paymentMethodType: 'stripe',
         isPaid: false,
       });
