@@ -203,21 +203,42 @@ export class PaymobService {
   // }
 
 
-  async handleWebhook(payload: any) {
+//   async handleWebhook(payload: any) {
+//   console.log('Paymob Webhook received:', payload);
+
+//   // استخدم القيم مباشرة من payload
+//   const success = payload.success === 'true';
+//   const isAuth = payload.is_auth === 'true';
+//   const merchantOrderId = payload.merchant_order_id;
+//   const orderId = payload.order; // أو أي id انت مخزنها
+
+//   if (success && isAuth) {
+//     console.log('✅ Payment success for order:', merchantOrderId);
+
+//     // أنشئ الأوردر
+//     await this.orderService.createOrderDependOnPaymentMethod(
+//       payload.owner, // لو عايز userId ممكن تبعته في metadata وقت الدفع
+//       'paymob',
+//       merchantOrderId
+//     );
+//   } else {
+//     console.log('❌ Payment failed:', payload);
+//   }
+
+//   return { received: true };
+// }
+
+async handleWebhook(payload: any) {
   console.log('Paymob Webhook received:', payload);
 
-  // استخدم القيم مباشرة من payload
   const success = payload.success === 'true';
-  const isAuth = payload.is_auth === 'true';
   const merchantOrderId = payload.merchant_order_id;
-  const orderId = payload.order; // أو أي id انت مخزنها
 
-  if (success && isAuth) {
+  if (success) {
     console.log('✅ Payment success for order:', merchantOrderId);
 
-    // أنشئ الأوردر
     await this.orderService.createOrderDependOnPaymentMethod(
-      payload.owner, // لو عايز userId ممكن تبعته في metadata وقت الدفع
+      payload.owner, // userId لو حابب تبعته في metadata
       'paymob',
       merchantOrderId
     );
@@ -227,5 +248,6 @@ export class PaymobService {
 
   return { received: true };
 }
+
 
 }
