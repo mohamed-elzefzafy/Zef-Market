@@ -42,14 +42,14 @@ export class PaymobController {
   }
 
   // === 2️⃣ Webhook لمعالجة الدفع بعد Paymob ===
-  @Post('webhook') // لازم POST في dashboard Paymob
-  async handleWebhook(@Body() payload: any) {
-    console.log('✅ Paymob Webhook received (POST):', payload);
+@Get('webhook')
+async handleWebhookGet(@Query() query: any) {
+  console.log('Paymob Webhook received (GET):', query);
 
-    await this.paymobService.handleWebhook(payload);
+  await this.paymobService.handleWebhook(query); // استعمل query بدل body
 
-    return { received: true };
-  }
+  return { received: true };
+}
 
   // === 3️⃣ Redirect بعد الدفع للـ user (اختياري) ===
   @Get('checkout-success')
