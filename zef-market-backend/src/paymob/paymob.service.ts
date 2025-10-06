@@ -183,22 +183,49 @@ export class PaymobService {
   }
 
   // ✅ 5) Handle Paymob Webhook
+  // async handleWebhook(payload: any) {
+  //   console.log('Paymob Webhook received:', payload);
+
+  //   // Check if transaction was successful
+  //   if (payload?.obj?.success && payload?.obj?.is_auth) {
+  //     const merchantOrderId = payload.obj.merchant_order_id;
+  //     const userId = payload.obj?.order?.user_id; // لو حابب تبعتها في metadata لاحقًا
+
+  //     console.log('✅ Payment success for order:', merchantOrderId);
+
+  //     // ✅ أنشئ الأوردر الفعلي بعد الدفع
+  //     await this.orderService.createOrderDependOnPaymentMethod(userId, "paymob", merchantOrderId);
+  //   } else {
+  //     console.log('❌ Payment failed:', payload.obj);
+  //   }
+
+  //   return { received: true };
+  // }
+
+
   async handleWebhook(payload: any) {
-    console.log('Paymob Webhook received:', payload);
+  console.log('Paymob Webhook received:', payload);
 
-    // Check if transaction was successful
-    if (payload?.obj?.success && payload?.obj?.is_auth) {
-      const merchantOrderId = payload.obj.merchant_order_id;
-      const userId = payload.obj?.order?.user_id; // لو حابب تبعتها في metadata لاحقًا
+  // استخدم القيم مباشرة من payload
+  const success = payload.success === 'true';
+  const isAuth = payload.is_auth === 'true';
+  const merchantOrderId = payload.merchant_order_id;
+  const orderId = payload.order; // أو أي id انت مخزنها
 
-      console.log('✅ Payment success for order:', merchantOrderId);
+  if (success && isAuth) {
+    console.log('✅ Payment success for order:', merchantOrderId);
 
-      // ✅ أنشئ الأوردر الفعلي بعد الدفع
-      await this.orderService.createOrderDependOnPaymentMethod(userId, "paymob", merchantOrderId);
-    } else {
-      console.log('❌ Payment failed:', payload.obj);
-    }
-
-    return { received: true };
+    // أنشئ الأوردر
+    await this.orderService.createOrderDependOnPaymentMethod(
+      payload.owner, // لو عايز userId ممكن تبعته في metadata وقت الدفع
+      'paymob',
+      merchantOrderId
+    );
+  } else {
+    console.log('❌ Payment failed:', payload);
   }
+
+  return { received: true };
+}
+
 }
