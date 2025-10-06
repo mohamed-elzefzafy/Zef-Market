@@ -13,19 +13,19 @@
 
 
 
-import { Controller, Post, Body, Req } from '@nestjs/common';
+import { Controller, Post, Body, Req, Get } from '@nestjs/common';
 import { PaymobService } from './paymob.service';
 
 @Controller('api/v1/paymob')
 export class PaymobController {
   constructor(private readonly paymobService: PaymobService) {}
 
-  @Post('checkout')
-  async checkout(@Body() body: { amount: number; orderId: string }) {
-    return this.paymobService.createOrderCheckoutSession(body.amount, body.orderId);
-  }
+  // @Post('checkout')
+  // async checkout(@Body() body: { amount: number; orderId: string }) {
+  //   return this.paymobService.createOrderCheckoutSession(body.amount, body.orderId);
+  // }
 
-  @Post('webhook')
+  @Get('webhook')
   async handleWebhook(@Body() payload: any, @Req() req: any) {
     return this.paymobService.handleWebhook(payload);
   }
