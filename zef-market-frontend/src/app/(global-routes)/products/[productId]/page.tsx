@@ -438,8 +438,9 @@ export default function ProductDetailsPage() {
                 size="large"
                 sx={{ borderRadius: "30px", px: {sx: 0.5 ,md:4} ,textTransform:"capitalize"}}
                 onClick={addToCartHandler}
+                disabled={product.stock === 0}
               >
-                Add to Cart
+                {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
               </Button>
               {/* <Button
                 variant="outlined"

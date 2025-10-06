@@ -45,6 +45,7 @@ const ProductCard = ({
     subCategory,
     finalPrice,
     rating,
+    stock,
     _id,
   },
   refetch,
@@ -204,8 +205,8 @@ const ProductCard = ({
 
         {/* Actions */}
         <Box mt={2}>
-          <Button variant="contained" color="primary" fullWidth onClick={addToCartHandler}>
-            Add to Cart
+          <Button variant="contained" color="primary" fullWidth onClick={addToCartHandler} disabled={stock === 0}>
+          {stock === 0 ? "Out of Stock" : "Add to Cart"}
           </Button>
         </Box>
       </CardContent>

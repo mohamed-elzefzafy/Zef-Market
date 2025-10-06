@@ -1545,12 +1545,36 @@ export class OrderService {
     }
 
     // 🟣 Paymob
+    // if (createOrderDto.paymentMethodType === 'paymob') {
+    //   const paymobOrder =
+    //     await this.paymobService.createOrderCheckoutSession(totalOrderPrice);
+
+    //   return {
+    //     _id: paymobOrder.orderId,
+    //     url: paymobOrder.iframeUrl,
+    //     paymentMethodType: 'paymob',
+    //   };
+    // }
     if (createOrderDto.paymentMethodType === 'paymob') {
-      const paymobOrder =
-        await this.paymobService.createOrderCheckoutSession(totalOrderPrice);
+      const order = await this.orderModel.create({
+        user: new Types.ObjectId(userId),
+        orderItems: [],
+        totalOrderPrice: 0,
+        totalOrderPriceAfterDiscount: 0,
+        discount: 0,
+        tax: 0,
+        shipping: 0,
+        paymentMethodType: 'paymob',
+        isPaid: false,
+      });
+
+      const paymobOrder = await this.paymobService.createOrderCheckoutSession(
+        totalOrderPrice,
+        order._id.toString(),
+      );
 
       return {
-        _id: paymobOrder.orderId,
+        _id: order._id,
         url: paymobOrder.iframeUrl,
         paymentMethodType: 'paymob',
       };
