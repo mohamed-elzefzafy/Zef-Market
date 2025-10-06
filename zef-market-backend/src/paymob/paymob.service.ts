@@ -103,19 +103,22 @@
 //   }
 // }
 
-
-
-
-import { Injectable, HttpException, HttpStatus, Inject, forwardRef } from "@nestjs/common";
-import axios from "axios";
-import { OrderService } from "src/order/order.service";
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
+import axios from 'axios';
+import { OrderService } from 'src/order/order.service';
 
 @Injectable()
 export class PaymobService {
   private readonly apiKey = process.env.PAYMOB_API_KEY;
   private readonly integrationId = process.env.PAYMOB_INTEGRATION_ID;
   private readonly iframeId = process.env.PAYMOB_IFRAME_ID;
-  private readonly baseUrl = "https://accept.paymob.com/api";
+  private readonly baseUrl = 'https://accept.paymob.com/api';
 
   constructor(
     @Inject(forwardRef(() => OrderService))
@@ -131,12 +134,16 @@ export class PaymobService {
   }
 
   // ✅ 2) Create Paymob Order
-  private async createPaymobOrder(authToken: string, amountCents: number, merchantOrderId: string): Promise<number> {
+  private async createPaymobOrder(
+    authToken: string,
+    amountCents: number,
+    merchantOrderId: string,
+  ): Promise<number> {
     const { data } = await axios.post(`${this.baseUrl}/ecommerce/orders`, {
       auth_token: authToken,
       delivery_needed: false,
       amount_cents: amountCents.toString(),
-      currency: "EGP",
+      currency: 'EGP',
       merchant_order_id: merchantOrderId, // 👈 ربط أوردر Paymob بأوردرك المحلي
       items: [],
     });
@@ -144,38 +151,56 @@ export class PaymobService {
   }
 
   // ✅ 3) Get Payment Key
-  private async getPaymentKey(authToken: string, amountCents: number, orderId: number): Promise<string> {
-    const { data } = await axios.post(`${this.baseUrl}/acceptance/payment_keys`, {
-      auth_token: authToken,
-      amount_cents: amountCents.toString(),
-      currency: "EGP",
-      order_id: orderId,
-      billing_data: {
-        apartment: "NA",
-        email: "test@example.com",
-        floor: "NA",
-        first_name: "Test",
-        street: "NA",
-        building: "NA",
-        phone_number: "+201234567890",
-        shipping_method: "PKG",
-        postal_code: "NA",
-        city: "Cairo",
-        country: "EG",
-        last_name: "User",
-        state: "Cairo",
+  private async getPaymentKey(
+    authToken: string,
+    amountCents: number,
+    orderId: number,
+  ): Promise<string> {
+    const { data } = await axios.post(
+      `${this.baseUrl}/acceptance/payment_keys`,
+      {
+        auth_token: authToken,
+        amount_cents: amountCents.toString(),
+        currency: 'EGP',
+        order_id: orderId,
+        billing_data: {
+          apartment: 'NA',
+          email: 'test@example.com',
+          floor: 'NA',
+          first_name: 'Test',
+          street: 'NA',
+          building: 'NA',
+          phone_number: '+201234567890',
+          shipping_method: 'PKG',
+          postal_code: 'NA',
+          city: 'Cairo',
+          country: 'EG',
+          last_name: 'User',
+          state: 'Cairo',
+        },
+        integration_id: this.integrationId,
       },
-      integration_id: this.integrationId,
-    });
+    );
 
     return data.token;
   }
 
   // ✅ 4) Create Order Checkout Session
-  async createOrderCheckoutSession(amount: number, orderId: string): Promise<{ iframeUrl: string; orderId: number }> {
+  async createOrderCheckoutSession(
+    amount: number,
+    orderId: string,
+  ): Promise<{ iframeUrl: string; orderId: number }> {
     const authToken = await this.getAuthToken();
-    const paymobOrderId = await this.createPaymobOrder(authToken, amount * 100, orderId);
-    const paymentKey = await this.getPaymentKey(authToken, amount * 100, paymobOrderId);
+    const paymobOrderId = await this.createPaymobOrder(
+      authToken,
+      amount * 100,
+      orderId,
+    );
+    const paymentKey = await this.getPaymentKey(
+      authToken,
+      amount * 100,
+      paymobOrderId,
+    );
 
     const iframeUrl = `https://accept.paymob.com/api/acceptance/iframes/${this.iframeId}?payment_token=${paymentKey}`;
 
@@ -202,53 +227,49 @@ export class PaymobService {
   //   return { received: true };
   // }
 
+  //   async handleWebhook(payload: any) {
+  //   console.log('Paymob Webhook received:', payload);
 
-//   async handleWebhook(payload: any) {
-//   console.log('Paymob Webhook received:', payload);
+  //   // استخدم القيم مباشرة من payload
+  //   const success = payload.success === 'true';
+  //   const isAuth = payload.is_auth === 'true';
+  //   const merchantOrderId = payload.merchant_order_id;
+  //   const orderId = payload.order; // أو أي id انت مخزنها
 
-//   // استخدم القيم مباشرة من payload
-//   const success = payload.success === 'true';
-//   const isAuth = payload.is_auth === 'true';
-//   const merchantOrderId = payload.merchant_order_id;
-//   const orderId = payload.order; // أو أي id انت مخزنها
+  //   if (success && isAuth) {
+  //     console.log('✅ Payment success for order:', merchantOrderId);
 
-//   if (success && isAuth) {
-//     console.log('✅ Payment success for order:', merchantOrderId);
+  //     // أنشئ الأوردر
+  //     await this.orderService.createOrderDependOnPaymentMethod(
+  //       payload.owner, // لو عايز userId ممكن تبعته في metadata وقت الدفع
+  //       'paymob',
+  //       merchantOrderId
+  //     );
+  //   } else {
+  //     console.log('❌ Payment failed:', payload);
+  //   }
 
-//     // أنشئ الأوردر
-//     await this.orderService.createOrderDependOnPaymentMethod(
-//       payload.owner, // لو عايز userId ممكن تبعته في metadata وقت الدفع
-//       'paymob',
-//       merchantOrderId
-//     );
-//   } else {
-//     console.log('❌ Payment failed:', payload);
-//   }
+  //   return { received: true };
+  // }
 
-//   return { received: true };
-// }
+  async handleWebhook(payload: any) {
+    console.log('Paymob Webhook received:', payload);
 
-async handleWebhook(payload: any) {
-  console.log('Paymob Webhook received:', payload);
+    const success = payload.success === 'true';
+    const merchantOrderId = payload.merchant_order_id;
 
-  const success = payload.success === 'true';
-  const merchantOrderId = payload.merchant_order_id;
-  
+    if (success) {
+      console.log('✅ Payment success for order:', merchantOrderId);
 
-  if (success) {
-    console.log('✅ Payment success for order:', merchantOrderId);
+      await this.orderService.createOrderDependOnPaymentMethod(
+        payload.owner, // userId لو حابب تبعته في metadata
+        'paymob',
+        merchantOrderId,
+      );
+    } else {
+      console.log('❌ Payment failed:', payload);
+    }
 
-    await this.orderService.createOrderDependOnPaymentMethod(
-      payload.owner, // userId لو حابب تبعته في metadata
-      'paymob',
-      merchantOrderId
-    );
-  } else {
-    console.log('❌ Payment failed:', payload);
+    return { received: true };
   }
-
-  return { received: true };
-}
-
-
 }
