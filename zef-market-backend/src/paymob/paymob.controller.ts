@@ -42,14 +42,14 @@ export class PaymobController {
   }
 
   // === 2️⃣ Webhook لمعالجة الدفع بعد Paymob ===
-// @Get('webhook')
-// async handleWebhookGet(@Query() query: any) {
-//   console.log('Paymob Webhook received (GET):', query);
+@Get('webhook')
+async handleWebhookGet(@Query() query: any) {
+  console.log('Paymob Webhook received (GET):', query);
 
-//   await this.paymobService.handleWebhook(query); // استعمل query بدل body
+  await this.paymobService.handleWebhook(query); // استعمل query بدل body
 
-//   return { received: true };
-// }
+  return { received: true };
+}
 
 
 
