@@ -86,6 +86,15 @@ export class PaymobController {
     return this.paymobService.handleWebhook(payload);
   }
 
+  @Get('webhook')
+getWebhookRedirect(@Query() query: any) {
+  console.log('User redirected after payment:', query);
+  return {
+    message: '✅ Redirect received after payment',
+    query,
+  };
+}
+
   // === 3️⃣ صفحة النجاح بعد الدفع ===
   @Get('checkout-success')
   async checkoutSuccess(@Query() query: any) {

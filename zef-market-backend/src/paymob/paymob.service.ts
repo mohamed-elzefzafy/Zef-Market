@@ -303,6 +303,8 @@ export class PaymobService {
 
       if (success && userId) {
         console.log('✅ Payment success, creating order...');
+        await this.orderService.findOne(merchantOrderId, { id: userId } as any);
+        
         await this.orderService.createOrderDependOnPaymentMethod(
           userId,
           'paymob',
