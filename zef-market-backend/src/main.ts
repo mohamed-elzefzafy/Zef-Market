@@ -24,6 +24,15 @@ async function bootstrap() {
   //   bodyParser.raw({ type: 'application/json' }),
   // );
 
+    app.use(
+    bodyParser.json({
+      verify: (req: any, res, buf) => {
+        req.rawBody = buf.toString();
+      },
+      limit: '10mb',
+    }),
+  );
+
     app.enableCors({
     origin: process.env.FRONTEND, 
     credentials: true, // Allow cookies to be sent

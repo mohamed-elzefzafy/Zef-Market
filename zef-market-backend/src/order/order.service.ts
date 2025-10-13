@@ -1964,11 +1964,17 @@ export class OrderService {
     paymentMethod: string,
     orderId: string = '',
   ) {
-    const cart = await this.cartService.getOrderCart(userId);
+    // const cart = await this.cartService.getOrderCart(userId);
 
-    if (cart.cartItems.length === 0) {
-      throw new BadRequestException('Cart is empty');
-    }
+    // if (cart.cartItems.length === 0) {
+    //   throw new BadRequestException('Cart is empty');
+    // }
+
+    const cart = await this.cartService.getOrderCart(userId);
+if (!cart) {
+  console.warn('⚠️ createOrderDependOnPaymentMethod: cart not found for user', userId);
+  throw new BadRequestException('Cart not found');
+}
 
     let totalOrderPrice = 0;
 
