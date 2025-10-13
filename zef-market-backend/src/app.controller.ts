@@ -55,7 +55,7 @@ export class AppController {
       reviewsCount,
       ordersCount,
       bannersCount,
-      couponsCount
+      couponsCount,
     };
   }
 }

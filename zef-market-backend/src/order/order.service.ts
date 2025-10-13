@@ -1555,30 +1555,58 @@ export class OrderService {
     //     paymentMethodType: 'paymob',
     //   };
     // }
+    // if (createOrderDto.paymentMethodType === 'paymob') {
+    //   const order = await this.orderModel.create({
+    //     user: new Types.ObjectId(userId),
+    //     orderItems: [],
+    //     totalOrderPrice: 0,
+    //     totalOrderPriceAfterDiscount: 0,
+    //     discount: 0,
+    //     tax: 0,
+    //     shipping: 0,
+    //     paymentMethodType: 'paymob',
+    //     isPaid: false,
+    //   });
+
+    //   const paymobOrder = await this.paymobService.createOrderCheckoutSession(
+    //     totalOrderPrice,
+    //     order._id.toString(),
+    //   );
+
+    //   return {
+    //     _id: order._id,
+    //     url: paymobOrder.iframeUrl,
+    //     paymentMethodType: 'paymob',
+    //   };
+    // }
+
+
     if (createOrderDto.paymentMethodType === 'paymob') {
-      const order = await this.orderModel.create({
-        user: new Types.ObjectId(userId),
-        orderItems: [],
-        totalOrderPrice: 0,
-        totalOrderPriceAfterDiscount: 0,
-        discount: 0,
-        tax: 0,
-        shipping: 0,
-        paymentMethodType: 'paymob',
-        isPaid: false,
-      });
+  const order = await this.orderModel.create({
+    user: new Types.ObjectId(userId),
+    orderItems: [],
+    totalOrderPrice: 0,
+    totalOrderPriceAfterDiscount: 0,
+    discount: 0,
+    tax: 0,
+    shipping: 0,
+    paymentMethodType: 'paymob',
+    isPaid: false,
+  });
 
-      const paymobOrder = await this.paymobService.createOrderCheckoutSession(
-        totalOrderPrice,
-        order._id.toString(),
-      );
+  const paymobOrder = await this.paymobService.createOrderCheckoutSession(
+    totalOrderPrice,
+    order._id.toString(),
+    userId, // 👈 أضف الـ userId هنا
+  );
 
-      return {
-        _id: order._id,
-        url: paymobOrder.iframeUrl,
-        paymentMethodType: 'paymob',
-      };
-    }
+  return {
+    _id: order._id,
+    url: paymobOrder.iframeUrl,
+    paymentMethodType: 'paymob',
+  };
+}
+
 
     throw new BadRequestException('Invalid payment method type');
   }
