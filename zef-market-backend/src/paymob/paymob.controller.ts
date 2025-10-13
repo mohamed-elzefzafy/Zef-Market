@@ -149,14 +149,14 @@ export class PaymobController {
   }
 
   // ✅ Webhook (GET) لو المستخدم راجع بعد الدفع
-  @Get('webhook')
-  getWebhookRedirect(@Query() query: any) {
-    console.log('User redirected after payment:', query);
-    return {
-      message: '✅ Redirect received after payment',
-      query,
-    };
-  }
+  // @Get('webhook')
+  // getWebhookRedirect(@Query() query: any) {
+  //   console.log('User redirected after payment:', query);
+  //   return {
+  //     message: '✅ Redirect received after payment',
+  //     query,
+  //   };
+  // }
 
   // ✅ صفحة النجاح بعد الدفع
   @Get('checkout-success')
