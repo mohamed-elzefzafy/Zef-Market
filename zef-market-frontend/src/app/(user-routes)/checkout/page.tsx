@@ -74,22 +74,22 @@ export default function CheckoutPage() {
         >
           Pay with card (Stripe)
         </Button>
-        <Button
+        {/* <Button
           variant="contained"
           sx={{ backgroundColor: "#0070ba", textTransform: "capitalize" }} // PayPal لون
           onClick={() => handleCheckout("paypal")}
           disabled={isLoading}
         >
           Pay with card (PayPal)
-        </Button>
-        <Button
+        </Button> */}
+        {/* <Button
           variant="contained"
           sx={{ backgroundColor: "#ff9800", textTransform: "capitalize" }} // Paymob لون
           onClick={() => handleCheckout("paymob")}
           disabled={isLoading}
         >
           Pay with card (Paymob)
-        </Button>
+        </Button> */}
       </Stack>
     </Box>
   );
