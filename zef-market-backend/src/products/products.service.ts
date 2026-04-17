@@ -54,9 +54,10 @@ export class ProductsService {
     const category = await this.categoryService.findOne(
       createProductDto.category,
     );
-    const subCategory = await this.subCategoryService.findOne(
+    const subCategory = await this.subCategoryService.findOneWithoutPopulate(
       createProductDto.subCategory,
     );
+    
     if (subCategory.category.toString() !== category._id.toString()) {
       throw new BadRequestException(
         `this subCategory ${subCategory.title} don't belong to category ${category.title}`,

@@ -112,6 +112,12 @@ export class SubCategoryService {
     return subCategory;
   }
 
+    public async findOneWithoutPopulate(id: string) {
+    const subCategory = await this.subCategoryModel.findById(id);
+    if (!subCategory) throw new NotFoundException('subCategory not found');
+    return subCategory;
+  }
+
   public async update(
     id: string,
     updateSubCategoryDto: UpdateSubCategoryDto,

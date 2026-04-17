@@ -114,45 +114,44 @@ export class StripeService {
   // }
 
   async createOrderCheckoutSession(
-  cart: any,
-  userId: string,
-  totalOrderPrice: number,
-  totalOrderPriceAfterDiscount: number,
-  discount: number,
-  tax: number,
-  shipping: number,
-  orderId: string, // 👈 استقبلنا orderId
-) {
-  return this.stripe.checkout.sessions.create({
-    metadata: {
-      userId,
-      orderId, // 👈 خزّنه فى metadata برضه لو حبيت تستخدمه فى الـ webhook
-      cartId: cart._id.toString(),
-      totalOrderPrice: totalOrderPrice.toString(),
-      totalOrderPriceAfterDiscount: totalOrderPriceAfterDiscount.toString(),
-      discount: discount.toString(),
-      tax: tax.toString(),
-      shipping: shipping.toString(),
-    },
-    line_items: cart.cartItems.map((item) => ({
-      price_data: {
-        currency: 'usd',
-        unit_amount: Number(item.finalPrice) * 100,
-        product_data: {
-          name: item.productId.title,
-          description: item.productId.description,
-            images: [item.productId.images[0].url],
-        },
+    cart: any,
+    userId: string,
+    totalOrderPrice: number,
+    totalOrderPriceAfterDiscount: number,
+    discount: number,
+    tax: number,
+    shipping: number,
+    orderId: string, // 👈 استقبلنا orderId
+  ) {
+    return this.stripe.checkout.sessions.create({
+      metadata: {
+        userId,
+        orderId, // 👈 خزّنه فى metadata برضه لو حبيت تستخدمه فى الـ webhook
+        cartId: cart._id.toString(),
+        totalOrderPrice: totalOrderPrice.toString(),
+        totalOrderPriceAfterDiscount: totalOrderPriceAfterDiscount.toString(),
+        discount: discount.toString(),
+        tax: tax.toString(),
+        shipping: shipping.toString(),
       },
-      quantity: item.quantity,
-    })),
-    mode: 'payment',
-    // 👇 أضف الـ orderId فى URL
-    success_url: `${this.configService.getOrThrow('STRIPE_SUCCESS_URL')}/orders/${orderId}`,
-    cancel_url: this.configService.getOrThrow('STRIPE_CANCEL_URL'),
-  });
-}
-
+      line_items: cart.cartItems.map((item) => ({
+        price_data: {
+          currency: 'usd',
+          unit_amount: Number(item.finalPrice) * 100,
+          product_data: {
+            name: item.productId.title,
+            description: item.productId.description,
+            images: [item.productId.images[0].url],
+          },
+        },
+        quantity: item.quantity,
+      })),
+      mode: 'payment',
+      // 👇 أضف الـ orderId فى URL
+      success_url: `${this.configService.getOrThrow('STRIPE_SUCCESS_URL')}/orders/${orderId}`,
+      cancel_url: this.configService.getOrThrow('STRIPE_CANCEL_URL'),
+    });
+  }
 
   async handleCheckoutWebhook(event: any) {
     console.log(event);
@@ -163,11 +162,17 @@ export class StripeService {
       event.data.object.id,
     );
 
-      const metadata = session.metadata;
-  if (!metadata || !metadata?.userId || !metadata?.orderId) {
-    throw new NotFoundException('Missing session metadata (userId or orderId)');
-  }
+    const metadata = session.metadata;
+    if (!metadata || !metadata?.userId || !metadata?.orderId) {
+      throw new NotFoundException(
+        'Missing session metadata (userId or orderId)',
+      );
+    }
 
-    await this.orderService.createOrderDependOnPaymentMethod(metadata.userId,"stripe",metadata.orderId);
+    await this.orderService.createOrderDependOnPaymentMethod(
+      metadata.userId,
+      'stripe',
+      metadata.orderId,
+    );
   }
 }
